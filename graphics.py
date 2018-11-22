@@ -4,6 +4,8 @@ import math
 # Gameboard class
 class Gameboard(object):
     
+    
+    
     # Initialize values for gameboard
     def __init__(self, x, y, width, height):        
         self.x = x

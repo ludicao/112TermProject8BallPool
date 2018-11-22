@@ -1,14 +1,13 @@
 import math
 import pygame
 import collisions
+import text
 
 # Ball class        
 class Ball(pygame.sprite.Sprite):
     
     radius = 15   
     innerRadius = 6    # All striped balls have an inner white circle
-    firstSolid = None
-    firstHoleHit = False
     
     @staticmethod
     # Return the colors of the ball                    
@@ -79,30 +78,9 @@ class Ball(pygame.sprite.Sprite):
         else:
             self.image.blit(text, (12, 8))
 
-        self.firstHoleHit = False
-
 
     # Update ball position, speed, angle    
     def update(self, balls, holes, fric):        
-        
-        # Check if ball falls into holes
-        for hole in holes:
-            for ball in balls:
-                dist = collisions.distance(hole.rect.x, hole.rect.y, \
-                                           ball.rect.x, ball.rect.y)
-                if dist <= (hole.radius + 15)*3/5:
-                    if not Ball.firstHoleHit and len(balls) == 16:
-                        Ball.firstHoleHit = True
-                        Ball.firstSolid = (type(ball) == Ball)
-                        ball.kill()
-                        
-                    if self.color == (255, 255, 255):
-                        ball.violation = True
-                        
-                    else:
-                        ball.kill()
-        
-        
         # Check if collision occurs
         for ball in balls:
             if ball != self and pygame.sprite.collide_circle(self, ball):
@@ -171,7 +149,8 @@ class whiteBall(Ball):
     def __init__(self, x, y, color, number):
         super().__init__(x, y, color, number)
         # Violation when ball doesn't strike other balls or goes into holes
-        self.violation = True    
+        self.violation = True  
+        self.holeViolation = False  
 
 # Black Ball class        
 class blackBall(Ball):
@@ -191,7 +170,6 @@ class stripedBalls(Ball):
         super().__init__(x, y, color, number)
         self.font = pygame.font.Font('Aller_Rg.ttf', 10)
         text = self.font.render(number, True, (0, 0, 0))
-        
         
         side = 2*Ball.radius
         colorSide = 2*stripedBalls.colorRadius
@@ -234,6 +212,4 @@ class stripedBalls(Ball):
             self.image.blit(text, (10, 8))
         else:
             self.image.blit(text, (12, 8))
-                        
-        
-                        
+          

@@ -6,7 +6,6 @@ import ballClass
 import graphics
 import text
 
-
 # Pygame class                   
 class Pygame():
     
@@ -14,27 +13,17 @@ class Pygame():
     def init(self):
         
         # Initialize gameboard and sprite groups
-        self.xStart = self.margin
-        self.yStart = self.margin
         self.boardWidth = self.width-2*self.margin
-        self.boardHeight = self.height-2*self.margin
-        self.gameboard = graphics.Gameboard(self.xStart, self.yStart, \
+        self.boardHeight = self.height-3*self.margin
+        self.gameboard = graphics.Gameboard(self.margin, self.margin, \
                                    self.boardWidth, self.boardHeight)
         self.ballGroup = pygame.sprite.Group() 
         self.holeGroup = pygame.sprite.Group()
         
         
         # Add holes to sprite group
-        xFirstCol = self.margin + graphics.Hole.radius
-        xSecondCol = self.boardWidth/2 + self.margin
-        xThirdCol = self.boardWidth + self.margin - graphics.Hole.radius
-        yFirstRow = self.margin + graphics.Hole.radius
-        ySecondRow = self.boardHeight + self.margin - graphics.Hole.radius
-        
-        listPos = [(xFirstCol, yFirstRow), (xSecondCol, yFirstRow), \
-                   (xThirdCol, yFirstRow), (xFirstCol, ySecondRow), \
-                   (xSecondCol, ySecondRow), (xThirdCol, ySecondRow)]
-                   
+        listPos = positions.holePositions(self.margin, \
+                                          self.boardWidth, self.boardHeight)           
         for pos in listPos:
             self.holeGroup.add(graphics.Hole(pos[0], pos[1]))
         
@@ -46,7 +35,6 @@ class Pygame():
         ballType = ballClass.Ball.ballType()
         ballNum = ballClass.Ball.ballNumber()
         
-
         for i in range(4):  
             if ballType[i] == True:
                 self.ballGroup.add(ballClass.Ball(ballPos[i][0], \
@@ -63,6 +51,7 @@ class Pygame():
                 self.ballGroup.add(ballClass.stripedBalls(ballPos[i+1][0], \
                 ballPos[i+1][1], ballColor[i], str(ballNum[i])))
             
+
         # Initialize black ball
         self.ballGroup.add(ballClass.blackBall(ballPos[4][0], \
                 ballPos[4][1], (0, 0, 0), '8'))
@@ -71,7 +60,8 @@ class Pygame():
         # Initialize white ball                       
         whiteX = self.width/4
         whiteY = self.height/2 
-        self.whiteBall = ballClass.whiteBall(whiteX, whiteY, (255, 255, 255), None)
+        self.whiteBall = ballClass.whiteBall(whiteX, whiteY, \
+                                            (255, 255, 255), None)
         self.ballGroup.add(self.whiteBall)
         
         
@@ -96,10 +86,8 @@ class Pygame():
         self.guideLines = graphics.GuideLines(listPosLines[0], listPosLines[1],\
                           self.angle)
   
-        # Initialize Player1 text
+        # Initialize player character text
         self.display1 = True
-        self.display1Full = None
-        self.firstBallJustHit = True
         self.player1 = None
         self.player2 = None
         self.firstHoleHit = False
@@ -137,7 +125,8 @@ class Pygame():
             self.x2CueInitial = self.cue.x2
             self.y1CueInitial = self.cue.y1
             self.y2CueInitial = self.cue.y2
-            
+        
+        # Get position of white ball when mouse is pressed while dragging white    
         if self.dragWhiteBall:
             self.whiteBall.rect.centerx = pygame.mouse.get_pos()[0]
             self.whiteBall.rect.centery = pygame.mouse.get_pos()[1]
@@ -147,6 +136,7 @@ class Pygame():
     
     # Cue stick strikes when mouse is released
     def mouseReleased(self):
+        # Released for cue strike
         if not self.dragWhiteBall:
             distX = self.cue.x1 - self.whiteBall.rect.centerx
             distY = self.cue.y1 - self.whiteBall.rect.centery
@@ -157,7 +147,8 @@ class Pygame():
             self.cueStriking = True
             self.hasPressed = False
 
-                
+        
+        # Released for white ball placement        
         if self.dragWhiteBall:
             self.whiteOnPress = False
             self.dragWhiteBall = False
@@ -178,7 +169,8 @@ class Pygame():
             listPosLines = self.guideLinesPos()
             self.guideLines = graphics.GuideLines(listPosLines[0], \
                               listPosLines[1],self.angle) 
-                              
+         
+        # Mouse motion for puting down white ball
         if self.dragWhiteBall and not self.whiteOnPress:
             self.whiteBall.rect.centerx = pygame.mouse.get_pos()[0]
             self.whiteBall.rect.centery = pygame.mouse.get_pos()[1]
@@ -209,21 +201,74 @@ class Pygame():
     # Timerfired function    
     def timerFired(self, dt):
         
-        # Update ball group
+        # Check if ball falls into holes
+        for hole in self.holeGroup:
+            for ball in self.ballGroup:
+                dist = collisions.distance(hole.rect.x, hole.rect.y, \
+                                           ball.rect.x, ball.rect.y)
+                
+                # Ball falls into hole if slightly overlaps with hole
+                if dist <= (hole.radius + 15)*3/5:
+                    
+                    # Check whether this is first ball in hole
+                    if not self.firstHoleHit:
+                        
+                        # This loop only operates once
+                        self.firstHoleHit = True   
+                        
+                        # Match player with their ball type
+                        if (type(ball) == ballClass.Ball) and self.display1 or \
+                        type(ball) != ballClass.Ball and not self.display1:
+                            self.player1 = text.Player('solid', 1, [])
+                            self.player2 = text.Player('striped', 2, [])
+                            
+                        elif type(ball) != ballClass.Ball and self.display1 or \
+                        type(ball) == ballClass.Ball and not self.display1:
+                            self.player1 = text.Player('striped', 1, [])
+                            self.player2 = text.Player('solid', 2, [])
+                    
+                    # Add score to player        
+                    if self.display1 and ball.color != (255, 255, 255):
+                        
+                        # Check the player strikes the correct ball type
+                        if (self.player1.type == 'striped' and \
+                        type(ball) != ballClass.Ball) or \
+                        (self.player1.type == 'solid' and \
+                        type(ball) == ballClass.Ball):                   
+                            
+                            self.player1.ballList += [[ball.number, ball.color]]
+                            
+                            
+                    elif not self.display1 and ball.color != (255, 255, 255):
+                        if (self.player2.type == 'striped' and \
+                        type(ball) != ballClass.Ball) or \
+                        (self.player2.type == 'solid' and \
+                        type(ball) == ballClass.Ball):
+                        
+                            self.player2.ballList += [[ball.number, ball.color]]
+
+                    # If colored ball is stiken, player continues playing       
+                    if ball.color != (255, 255, 255): 
+                        ball.kill()
+                        text.Player.playerContinue = True
+                    
+                    # Rule violation if white ball is striken    
+                    elif ball.color == (255, 255, 255):
+                        self.whiteBall.holeViolation = True
+                        self.xSpeed = 0
+                        self.ySpeed =0
+
+
+        # Check collisions with balls, change speed and direction if necessary,
+        # update ball position
         self.ballGroup.update(self.ballGroup, self.holeGroup, \
         self.gameboard.friction)
         
-        if ballClass.Ball.firstHoleHit and self.player1 == None:
-            print('here')
-            listType = text.checkType(ballClass.Ball.firstSolid, self.display1)
-            self.player1 = text.Player(listType[0], 1)
-            self.player2 = text.Player(listType[1], 2)
-            self.firstHoleHit = False
-
         
         # Check for collisions with borders
         collisions.collideBorder(self.ballGroup, self.margin, \
         self.boardHeight, self.boardWidth)
+        
         
         # Only update cue movement when mouse is released 
         # and cue is stiking the ball
@@ -244,8 +289,10 @@ class Pygame():
                 self.showGuideLines = True
                 self.startCheck = True
                 
-                
+        # Check if there is still moving balls after cue strike:
+        # If none, then next player's turn
         if self.startCheck: 
+
             # Check if all balls have stopped moving
             numMoving = 0
             for ball in self.ballGroup:
@@ -256,7 +303,9 @@ class Pygame():
                 # If so, cue stick reappears
                 self.hasHit = False
                 self.startCheck = False
-                self.display1 = not self.display1
+                if text.Player.playerContinue == False:
+                    self.display1 = not self.display1
+                text.Player.playerContinue = False
 
                 if self.whiteBall.violation:
                     self.dragWhiteBall = True 
@@ -269,7 +318,10 @@ class Pygame():
                     self.guideLines = graphics.GuideLines(linesPos[0], \
                                                         linesPos[1], self.angle)
                                                         
+                        
+                                                        
                 self.whiteBall.violation = True
+                self.whiteBall.holeViolation  = False
 
             else:
                 self.hasHit = True
@@ -283,39 +335,55 @@ class Pygame():
         self.gameboard.draw(screen)
         self.holeGroup.draw(screen)
         self.ballGroup.draw(screen)
+        
+        # Doesn't draw cue when balls are still moving
         if self.hasHit == False and self.dragWhiteBall == False:
             self.cue.draw(screen)
         if self.showGuideLines and not self.hasHit and not self.dragWhiteBall:
             self.guideLines.draw(screen)
+            
+        # If whiteball has fallen into holes and is being dragged
         if self.dragWhiteBall:
             x = self.whiteBall.rect.centerx
             y = self.whiteBall.rect.centery
             r = ballClass.Ball.radius
             pygame.draw.circle(screen, (255, 255, 255), (x, y), r, 0)
-            
+         
+        # If no player has hit a ball yet
         if self.player1 == None:
             if self.display1:
                 text.Player.drawNone(screen, self.width, self.margin, True)
             else:
                 text.Player.drawNone(screen, self.width, self.margin, False)
-       
+            self.font = pygame.font.Font('cmunti.ttf', 15)
+            text1 = self.font.render('Player 1:', True, (0, 0, 0))
+            screen.blit(text1, (self.margin, self.boardHeight + self.margin))
+            text2 = self.font.render('Player 2:', True, (0, 0, 0))
+            screen.blit(text2, (self.margin, self.boardHeight + 2*self.margin))
+            
+       # If a ball has been hit and player has a ball type
         else:
             if self.display1:
                 self.player1.draw(screen, self.width, self.margin) 
             else:
                 self.player2.draw(screen, self.width, self.margin)
                 
-            
+            # Draws the score down at bottom
+            self.player1.drawScore(screen, self.margin, \
+                                   self.boardHeight, self.boardWidth)
+            self.player2.drawScore(screen, self.margin, \
+                                   self.boardHeight, self.boardWidth)
+                
         
         
     # init values of the Pygame class
-    def __init__(self, width=800, height=600, fps=50, title="112 Pygame Game"):
+    def __init__(self, width=800, height=640, fps=50, title="112 Pygame Game"):
         self.width = width
         self.height = height
         self.margin = 40
         self.fps = fps
         self.title = title
-        self.bgColor = (255, 255, 255)
+        self.bgColor = (102, 178, 255)
         pygame.init()
     
            
@@ -352,7 +420,7 @@ class Pygame():
                 elif (event.type == pygame.MOUSEMOTION and
                       event.buttons[0] == 1):
                     self.mouseDrag()
-            screen.fill((255,255,255))
+            screen.fill((102, 178, 255))
             self.redrawAll(screen)
             pygame.display.flip()
 
