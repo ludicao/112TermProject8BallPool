@@ -4,6 +4,7 @@ import collisions
 import positions
 import ballClass
 import graphics
+import text
 
 
 # Pygame class                   
@@ -82,7 +83,6 @@ class Pygame():
         self.dragWhiteBall = False
         self.whiteOnPress = False
         self.startCheck = False
-        self.hit = True
         
         # Initialize cue stick
         self.xCue = 0
@@ -95,6 +95,16 @@ class Pygame():
         listPosLines = self.guideLinesPos()
         self.guideLines = graphics.GuideLines(listPosLines[0], listPosLines[1],\
                           self.angle)
+  
+        # Initialize Player1 text
+        self.display1 = True
+        self.display1Full = None
+        self.firstBallJustHit = True
+        self.player1 = None
+        self.player2 = None
+        self.firstHoleHit = False
+        
+        
   
     # Return guide lines position
     def guideLinesPos(self):
@@ -202,6 +212,13 @@ class Pygame():
         # Update ball group
         self.ballGroup.update(self.ballGroup, self.holeGroup, \
         self.gameboard.friction)
+        
+        if ballClass.Ball.firstHoleHit and self.player1 == None:
+            print('here')
+            listType = text.checkType(ballClass.Ball.firstSolid, self.display1)
+            self.player1 = text.Player(listType[0], 1)
+            self.player2 = text.Player(listType[1], 2)
+            self.firstHoleHit = False
 
         
         # Check for collisions with borders
@@ -239,15 +256,14 @@ class Pygame():
                 # If so, cue stick reappears
                 self.hasHit = False
                 self.startCheck = False
-                # Include this so Cue stick shows at the new position of the white ball 
-                # instead of at last postion 
-                
+                self.display1 = not self.display1
+
                 if self.whiteBall.violation:
                     self.dragWhiteBall = True 
                 
                 if self.hasHit == False and self.hasPressed == False:
                     listPos = self.cuePositionNotPressed()
-                    self.cue = graphics.Cue(listPos[0], listPos[1], listPos[2], \
+                    self.cue = graphics.Cue(listPos[0], listPos[1], listPos[2],\
                                             listPos[3])
                     linesPos = self.guideLinesPos()
                     self.guideLines = graphics.GuideLines(linesPos[0], \
@@ -276,6 +292,19 @@ class Pygame():
             y = self.whiteBall.rect.centery
             r = ballClass.Ball.radius
             pygame.draw.circle(screen, (255, 255, 255), (x, y), r, 0)
+            
+        if self.player1 == None:
+            if self.display1:
+                text.Player.drawNone(screen, self.width, self.margin, True)
+            else:
+                text.Player.drawNone(screen, self.width, self.margin, False)
+       
+        else:
+            if self.display1:
+                self.player1.draw(screen, self.width, self.margin) 
+            else:
+                self.player2.draw(screen, self.width, self.margin)
+                
             
         
         

@@ -163,8 +163,6 @@ def collide(ball1, ball2):
             ball1.xSpeed = 0
             ball1.ySpeed = 0
     
-            #ball1.xSpeed = -ballV*math.cos(hitAngle)*1/5
-            #ball1.ySpeed = ballV*math.sin(hitAngle)*1/5
     
     
     # If two colliding balls are in same x or y level        

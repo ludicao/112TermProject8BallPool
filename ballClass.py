@@ -7,6 +7,8 @@ class Ball(pygame.sprite.Sprite):
     
     radius = 15   
     innerRadius = 6    # All striped balls have an inner white circle
+    firstSolid = None
+    firstHoleHit = False
     
     @staticmethod
     # Return the colors of the ball                    
@@ -77,6 +79,7 @@ class Ball(pygame.sprite.Sprite):
         else:
             self.image.blit(text, (12, 8))
 
+        self.firstHoleHit = False
 
 
     # Update ball position, speed, angle    
@@ -88,8 +91,14 @@ class Ball(pygame.sprite.Sprite):
                 dist = collisions.distance(hole.rect.x, hole.rect.y, \
                                            ball.rect.x, ball.rect.y)
                 if dist <= (hole.radius + 15)*3/5:
+                    if not Ball.firstHoleHit and len(balls) == 16:
+                        Ball.firstHoleHit = True
+                        Ball.firstSolid = (type(ball) == Ball)
+                        ball.kill()
+                        
                     if self.color == (255, 255, 255):
                         ball.violation = True
+                        
                     else:
                         ball.kill()
         
@@ -154,11 +163,7 @@ class Ball(pygame.sprite.Sprite):
                         
     
 
-                
-    
-                
-        
-                
+               
         
 # Whiteball class
 class whiteBall(Ball):
