@@ -1,4 +1,5 @@
 import pygame
+import math
 
 # Gameboard class
 class Gameboard(object):
@@ -22,7 +23,7 @@ class Gameboard(object):
 # Hole Class
 class Hole(pygame.sprite.Sprite):
     
-    radius = 23    # Constant for all holes
+    radius = 25   # Constant for all holes
     color = (0, 0, 0)    # All holes are black
     
     # Init values:
@@ -65,23 +66,29 @@ class Cue(pygame.sprite.Sprite):
 # Class for guiding lines for cue stick to strike        
 class GuideLines():
     
-    gap = 50
-    length = 80
+    gap = 20
+    length = 40
     color = (255, 255, 255)
     extendingDist = 800
+    thickness = 2
     
-    def __init__(self, x1, y1, extendAngle, relativePos):
-        self.x1 = x1
-        self.y1 = y1   
+    def __init__(self, xStart, yStart, extendAngle):
+        self.xStart = xStart
+        self.yStart = yStart
         self.extendAngle = extendAngle
-        self.relativePos = relativePos
-        
-    #def posOfEndPoints(self, relativePos):
-        
-            
-        
+
+       
     def draw(self, screen):
-        dist = distance(self.boardCornerx, self.boardCornery, self.x1, self.x2)
-        drawNum = GuideLines.extendingDist // (GuideLines.gap + GuideLines.length) + 1
+        drawNum = self.extendingDist // (self.gap + self.length) + 1
+        for i in range(drawNum):
+            x1 = self.xStart - \
+                 i*(self.length+self.gap)*math.cos(self.extendAngle)
+            y1 = self.yStart + \
+                 i*(self.length+self.gap)*math.sin(self.extendAngle)
+            x2 = x1 + GuideLines.length*math.cos(self.extendAngle)
+            y2 = y1 - GuideLines.length*math.sin(self.extendAngle)
+            
+            pygame.draw.lines(screen, self.color, False, \
+                              [(x1, y1), (x2, y2)], self.thickness)
         
         

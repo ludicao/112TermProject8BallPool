@@ -41,19 +41,48 @@ class Pygame():
         # Set up initial positions of colored balls
         ballPos = positions.ballStartPositions(self.width, \
                                                self.margin, self.height)
-        for pos in ballPos:        
-            self.ballGroup.add(ballClass.Ball(pos[0], pos[1], (247, 56, 56)))            
+        ballColor = ballClass.Ball.colorList()
+        ballType = ballClass.Ball.ballType()
+        ballNum = ballClass.Ball.ballNumber()
+        
+
+        for i in range(4):  
+            if ballType[i] == True:
+                self.ballGroup.add(ballClass.Ball(ballPos[i][0], \
+                ballPos[i][1], ballColor[i], str(ballNum[i])))
+            else:
+                self.ballGroup.add(ballClass.stripedBalls(ballPos[i][0], \
+                ballPos[i][1], ballColor[i], str(ballNum[i])))
+                
+        for i in range(4, len(ballPos)-1):
+            if ballType[i] == True:
+                self.ballGroup.add(ballClass.Ball(ballPos[i+1][0], \
+                ballPos[i+1][1], ballColor[i], str(ballNum[i])))
+            else:
+                self.ballGroup.add(ballClass.stripedBalls(ballPos[i+1][0], \
+                ballPos[i+1][1], ballColor[i], str(ballNum[i])))
+            
+        # Initialize black ball
+        self.ballGroup.add(ballClass.blackBall(ballPos[4][0], \
+                ballPos[4][1], (0, 0, 0), '8'))
+            
+            
+        # Initialize white ball                       
         whiteX = self.width/4
         whiteY = self.height/2 
-        
-        # Initialize white ball
-        self.whiteBall = ballClass.Ball(whiteX, whiteY, (255, 255, 255))
+        self.whiteBall = ballClass.whiteBall(whiteX, whiteY, (255, 255, 255), None)
         self.ballGroup.add(self.whiteBall)
+        
         
         # Initialize mouse drag, press, motion boolean vales
         self.hasHit = False
         self.hasPressed = False
         self.cueStriking = False
+        self.showGuideLines = True
+        self.dragWhiteBall = False
+        self.whiteOnPress = False
+        self.startCheck = False
+        self.hit = True
         
         # Initialize cue stick
         self.xCue = 0
@@ -61,8 +90,19 @@ class Pygame():
         self.cueSpeed = 30
         listPos = self.cuePositionNotPressed()
         self.cue = graphics.Cue(listPos[0], listPos[1], listPos[2], listPos[3])
+        
+        # Initialize guideLines
+        listPosLines = self.guideLinesPos()
+        self.guideLines = graphics.GuideLines(listPosLines[0], listPosLines[1],\
+                          self.angle)
   
-     
+    # Return guide lines position
+    def guideLinesPos(self):
+        return positions.guideLinePosition(self.angle, self.xCue, \
+               self.yCue, self.whiteBall.rect.centerx,\
+               self.whiteBall.rect.centery, graphics.Cue.distanceFromWhite)
+        
+        
     # Return cue position
     def cuePositionNotPressed(self):
         
@@ -79,7 +119,7 @@ class Pygame():
     # Keep track of orginal curser positions when mouse is pressed
     def mousePressed(self):
         # Only responds to mouse presses when the cue hasn't stroke the ball 
-        if self.hasHit == False:
+        if self.hasHit == False and self.dragWhiteBall == False:
             self.hasPressed = True    # hasPressed condition turns on
             self.xDragInitial = pygame.mouse.get_pos()[0]
             self.yDragInitial = pygame.mouse.get_pos()[1]
@@ -87,29 +127,52 @@ class Pygame():
             self.x2CueInitial = self.cue.x2
             self.y1CueInitial = self.cue.y1
             self.y2CueInitial = self.cue.y2
-        
+            
+        if self.dragWhiteBall:
+            self.whiteBall.rect.centerx = pygame.mouse.get_pos()[0]
+            self.whiteBall.rect.centery = pygame.mouse.get_pos()[1]
+            self.whiteOnPress = True
+            
+
     
     # Cue stick strikes when mouse is released
     def mouseReleased(self):
-        distX = self.cue.x1 - self.whiteBall.rect.centerx
-        distY = self.cue.y1 - self.whiteBall.rect.centery
-        # force of cue stick depends on its distance from the whiteBall
-        self.forceApplied = (distX**2+distY**2)**0.5 * 0.4
-        
-        # bool vales switch
-        self.cueStriking = True
-        self.hasPressed = False
+        if not self.dragWhiteBall:
+            distX = self.cue.x1 - self.whiteBall.rect.centerx
+            distY = self.cue.y1 - self.whiteBall.rect.centery
+            # force of cue stick depends on its distance from the whiteBall
+            self.forceApplied = (distX**2+distY**2)**0.5 * 0.4
+            
+            # bool vales switch
+            self.cueStriking = True
+            self.hasPressed = False
 
+                
+        if self.dragWhiteBall:
+            self.whiteOnPress = False
+            self.dragWhiteBall = False
+
+        
 
     # A cue stick follows the cursor position when no balls are moving on board
     def mouseMotion(self):
+
         # Motion turns on when mouse hasn't been pressed and cue hasn't striken
-        if self.hasHit == False and self.hasPressed == False:
+        if self.hasHit == False and self.hasPressed == False and \
+        self.dragWhiteBall == False:
             self.xCue = pygame.mouse.get_pos()[0]
             self.yCue = pygame.mouse.get_pos()[1]
             listPos = self.cuePositionNotPressed()
             self.cue = graphics.Cue(listPos[0], listPos[1], listPos[2], \
                                     listPos[3])
+            listPosLines = self.guideLinesPos()
+            self.guideLines = graphics.GuideLines(listPosLines[0], \
+                              listPosLines[1],self.angle) 
+                              
+        if self.dragWhiteBall and not self.whiteOnPress:
+            self.whiteBall.rect.centerx = pygame.mouse.get_pos()[0]
+            self.whiteBall.rect.centery = pygame.mouse.get_pos()[1]
+            
 
     # cue stick moves according to the mouse drag distance to strike the ball        
     def mouseDrag(self):
@@ -135,13 +198,15 @@ class Pygame():
     
     # Timerfired function    
     def timerFired(self, dt):
+        
         # Update ball group
         self.ballGroup.update(self.ballGroup, self.holeGroup, \
         self.gameboard.friction)
+
         
         # Check for collisions with borders
         collisions.collideBorder(self.ballGroup, self.margin, \
-        self.boardHeight, self.boardWidth, )
+        self.boardHeight, self.boardWidth)
         
         # Only update cue movement when mouse is released 
         # and cue is stiking the ball
@@ -159,26 +224,42 @@ class Pygame():
                 # Cue stick disappears
                 self.hasHit = True
                 self.cueStriking = False
+                self.showGuideLines = True
+                self.startCheck = True
                 
                 
-        # Check if all balls have stopped moving
-        numMoving = 0
-        for ball in self.ballGroup:
-            if ball.xSpeed != 0 and ball.ySpeed != 0:
-                numMoving += 1
+        if self.startCheck: 
+            # Check if all balls have stopped moving
+            numMoving = 0
+            for ball in self.ballGroup:
+                if ball.xSpeed != 0 and ball.ySpeed != 0:
+                    numMoving += 1
+            
+            if numMoving  == 0:
+                # If so, cue stick reappears
+                self.hasHit = False
+                self.startCheck = False
+                # Include this so Cue stick shows at the new position of the white ball 
+                # instead of at last postion 
+                
+                if self.whiteBall.violation:
+                    self.dragWhiteBall = True 
+                
+                if self.hasHit == False and self.hasPressed == False:
+                    listPos = self.cuePositionNotPressed()
+                    self.cue = graphics.Cue(listPos[0], listPos[1], listPos[2], \
+                                            listPos[3])
+                    linesPos = self.guideLinesPos()
+                    self.guideLines = graphics.GuideLines(linesPos[0], \
+                                                        linesPos[1], self.angle)
+                                                        
+                self.whiteBall.violation = True
+
+            else:
+                self.hasHit = True
         
-        if numMoving  == 0:
-            # If so, cue stick reappears
-            self.hasHit = False
-        else:
-            self.hasHit = True
-        
-        # Include this so Cue stick shows at the new position of the white ball 
-        # instead of at last postion 
-        if not self.hasHit and self.hasPressed == False:
-            listPos = self.cuePositionNotPressed()
-            self.cue = graphics.Cue(listPos[0], listPos[1], listPos[2], \
-                                    listPos[3]) 
+
+           
             
     
     # Draw and update the game board    
@@ -186,8 +267,16 @@ class Pygame():
         self.gameboard.draw(screen)
         self.holeGroup.draw(screen)
         self.ballGroup.draw(screen)
-        if self.hasHit == False:
+        if self.hasHit == False and self.dragWhiteBall == False:
             self.cue.draw(screen)
+        if self.showGuideLines and not self.hasHit and not self.dragWhiteBall:
+            self.guideLines.draw(screen)
+        if self.dragWhiteBall:
+            x = self.whiteBall.rect.centerx
+            y = self.whiteBall.rect.centery
+            r = ballClass.Ball.radius
+            pygame.draw.circle(screen, (255, 255, 255), (x, y), r, 0)
+            
         
         
     # init values of the Pygame class

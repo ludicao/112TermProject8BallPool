@@ -10,12 +10,8 @@ def collide(ball1, ball2):
 
     dist = distance(ball1.rect.centerx, ball1.rect.centery, \
     ball2.rect.centerx, ball2.rect.centery)
-    '''
-    # Add small speed to prevent zero division error
-    if ball1.xSpeed == 0 and ball1.ySpeed == 0:
-        ball1.xSpeed = 0.05
-        ball1.ySpeed = 0.05
-    '''
+
+
     # Diagonal speed of ball    
     ballV = (ball1.xSpeed**2+ball1.ySpeed**2)**0.5
     
@@ -164,8 +160,11 @@ def collide(ball1, ball2):
         if hitAngle == strikeAngle:
             ball2.xSpeed = -ballV*math.cos(hitAngle)
             ball2.ySpeed = ballV*math.sin(hitAngle)
-            ball1.xSpeed = -ballV*math.cos(hitAngle)*1/5
-            ball1.xSpeed = ballV*math.sin(hitAngle)*1/5
+            ball1.xSpeed = 0
+            ball1.ySpeed = 0
+    
+            #ball1.xSpeed = -ballV*math.cos(hitAngle)*1/5
+            #ball1.ySpeed = ballV*math.sin(hitAngle)*1/5
     
     
     # If two colliding balls are in same x or y level        

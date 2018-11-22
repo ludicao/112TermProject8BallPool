@@ -44,6 +44,8 @@ def ballStartPositions(width, margin, height):
             (fifthX+16, fifthY5-16)]
             
 
+            
+
 # Calculate cue stick angle with white ball            
 def cueAngle(xCue, yCue, whiteBallX, whiteBallY):
     xDist = xCue - whiteBallX
@@ -75,5 +77,14 @@ def cuePosition(angle, xCue, yCue, whiteBallX, whiteBallY, \
     x2 = x1 + cueLength*math.cos(angle)
     y2 = y1 - cueLength*math.sin(angle)
     return (x1, y1, x2, y2)
+
+ 
+# Return xStart and yStart of guide lines
+def guideLinePosition(angle, xCue, yCue, whiteBallX, whiteBallY, distFromWhite):
+    angle = cueAngle(xCue, yCue, whiteBallX, whiteBallY)
+    xStart = whiteBallX - 2*distFromWhite*math.cos(angle)
+    yStart = whiteBallY + 2*distFromWhite*math.sin(angle)
+    return (xStart, yStart)
+    
     
     
