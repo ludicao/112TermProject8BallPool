@@ -1,4 +1,5 @@
 import math
+import ballClass
 
 # Calculate distance beteween two points
 def distance(x1, y1, x2, y2):
@@ -56,7 +57,7 @@ def collide(ball1, ball2):
             
         
     # When striking ball is in lower left position
-    if ball1.rect.x < ball2.rect.x and ball1.rect.y > ball2.rect.y:
+    elif ball1.rect.x < ball2.rect.x and ball1.rect.y > ball2.rect.y:
         triSide = ball1.rect.y - ball2.rect.y
         angle = math.acos(triSide/dist)
         ballV = (ball1.xSpeed**2 + ball1.ySpeed**2)**0.5
@@ -87,12 +88,12 @@ def collide(ball1, ball2):
             ball2.xSpeed = ballV*math.cos(hitAngle)
             ball2.ySpeed = -ballV*math.sin(hitAngle)
             ball1.xSpeed = ballV*math.cos(hitAngle)*1/5
-            ball1.xSpeed = ballV*math.sin(hitAngle)*1/5
+            ball1.xSpeed = -ballV*math.sin(hitAngle)*1/5
             
         
             
-    # When striking ball is in upper right posision    
-    if ball1.rect.x > ball2.rect.x and ball1.rect.y > ball2.rect.y:
+    # When striking ball is in lower right position    
+    elif ball1.rect.x > ball2.rect.x and ball1.rect.y > ball2.rect.y:
         triSide = ball1.rect.y - ball2.rect.y
         angle = math.acos(triSide/dist)
         ballV = (ball1.xSpeed**2 + ball1.ySpeed**2)**0.5
@@ -112,8 +113,8 @@ def collide(ball1, ball2):
         if hitAngle > strikeAngle:
             cosAngle = math.cos(angle)
             sinAngle = math.sin(angle)
-            ball1V = ball1.ySpeed*sinAngle - ball1.xSpeed*cosAngle
-            ball2V = -ball1.xSpeed*sinAngle - ball1.ySpeed*cosAngle
+            ball1V = ball1.xSpeed*sinAngle - ball1.ySpeed*cosAngle
+            ball2V = -ball1.xSpeed*cosAngle - ball1.ySpeed*sinAngle
             ball1.xSpeed = -ball1V*cosAngle
             ball1.ySpeed = ball1V*sinAngle
             ball2.xSpeed = -ball2V*sinAngle
@@ -123,13 +124,13 @@ def collide(ball1, ball2):
             ball2.xSpeed = -ballV*math.cos(hitAngle)
             ball2.ySpeed = -ballV*math.sin(hitAngle)
             ball1.xSpeed = -ballV*math.cos(hitAngle)*1/5
-            ball1.xSpeed = -ballV*math.sin(hitAngle)*1/5
+            ball1.ySpeed = -ballV*math.sin(hitAngle)*1/5
 
     
     
     
-    # When striking ball is in lower right position    
-    if ball1.rect.x > ball2.rect.x and ball1.rect.y < ball2.rect.y:
+    # When striking ball is in upper right position    
+    elif ball1.rect.x > ball2.rect.x and ball1.rect.y < ball2.rect.y:
         triSide = ball2.rect.y - ball1.rect.y
         angle = math.acos(triSide/dist)
         ballV = (ball1.xSpeed**2 + ball1.ySpeed**2)**0.5
@@ -160,13 +161,13 @@ def collide(ball1, ball2):
         if hitAngle == strikeAngle:
             ball2.xSpeed = -ballV*math.cos(hitAngle)
             ball2.ySpeed = ballV*math.sin(hitAngle)
-            ball1.xSpeed = 0
-            ball1.ySpeed = 0
+            ball1.xSpeed = -ballV*math.cos(hitAngle)*1/5
+            ball1.ySpeed = ballV*math.sin(hitAngle)*1/5
     
     
     
     # If two colliding balls are in same x or y level        
-    if ball1.rect.x == ball2.rect.x or ball1.rect.y == ball2.rect.y:
+    elif ball1.rect.x == ball2.rect.x or ball1.rect.y == ball2.rect.y:
         ballV = (ball1.xSpeed**2 + ball1.ySpeed**2)**0.5
         ball1.ySpeed, ball2.xSpeed = ball1.ySpeed, ball1.xSpeed
         ball1.xSpeed, ball2.ySpeed = 0, 0
@@ -181,4 +182,38 @@ def collideBorder(ballGroup, margin, boardHeight, boardWidth):
         elif ball.rect.x <= margin or \
         ball.rect.x >= boardWidth+margin:
             ball.xSpeed = -ball.xSpeed
+            
+def adjustCollision(ball1, ball2, oldX, oldY, radius):
+    dist = distance(ball1.rect.x, ball1.rect.y, ball2.rect.x, ball2.rect.y)
+    triSide = abs(ball2.rect.x - ball1.rect.x)
+    angle = math.acos(triSide/dist)
+    xDiff = abs(radius*2*math.cos(angle) - dist*math.cos(angle))
+    yDiff = abs(radius*2*math.sin(angle) - dist*math.cos(angle))
+    
+    if oldX <= ball2.rect.x and oldY <= ball2.rect.y:
+        ball1.rect.x -= xDiff
+        ball1.rect.y -= yDiff
+        ball1.xSpeed -= xDiff
+        ball1.ySpeed -= yDiff
+        
+    elif oldX <= ball2.rect.x and oldY >= ball2.rect.y:
+        ball1.rect.x -= xDiff
+        ball1.rect.y += yDiff
+        ball1.xSpeed -= xDiff
+        ball1.ySpeed += yDiff
+        
+    elif oldX >= ball2.rect.x and oldY >= ball2.rect.y:
+        ball1.rect.x += xDiff
+        ball1.rect.y += yDiff
+        ball1.xSpeed += xDiff
+        ball1.ySpeed += yDiff
+        
+    elif oldX >= ball2.rect.x and oldY <= ball2.rect.y:
+        ball1.rect.x += xDiff
+        ball1.rect.y -= yDiff
+        ball1.xSpeed += xDiff
+        ball1.ySpeed -= yDiff
+        
+        
+    
              

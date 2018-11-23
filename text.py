@@ -130,6 +130,8 @@ class Player():
         else:
             screen.blit(textNum, (startx-innerRadius+2, starty-innerRadius+2))
             
+
+            
         
                
         

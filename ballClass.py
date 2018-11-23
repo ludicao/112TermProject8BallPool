@@ -98,12 +98,19 @@ class Ball(pygame.sprite.Sprite):
                         ball.violation = False                  
                     collisions.collide(self,  ball)
 
-                
-        # Update ball position
-        self.rect.x += self.xSpeed
-        self.rect.y += self.ySpeed
         
-        # Apply add friction to ball speed
+        oldX = self.rect.x
+        oldY = self.rect.y
+        self.rect.x += self.xSpeed
+        self.rect.y += self.ySpeed        
+        # Update ball position:
+        for ball in balls:
+            if self != ball and pygame.sprite.collide_circle(self, ball): 
+                collisions.adjustCollision(self, ball, oldX, oldY, Ball.radius)
+    
+
+        
+        # Apply friction to ball speed
         if self.xSpeed != 0 or self.ySpeed != 0:
             if abs(self.xSpeed)+abs(self.ySpeed) != 0:
                 xFric = abs(self.xSpeed)/(abs(self.xSpeed)+\

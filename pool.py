@@ -5,6 +5,7 @@ import positions
 import ballClass
 import graphics
 import text
+import startScreen 
 
 # Pygame class                   
 class Pygame():
@@ -73,6 +74,7 @@ class Pygame():
         self.dragWhiteBall = False
         self.whiteOnPress = False
         self.startCheck = False
+        self.forceApplied = 0
         
         # Initialize cue stick
         self.xCue = 0
@@ -87,11 +89,13 @@ class Pygame():
                           self.angle)
   
         # Initialize player character text
-        self.display1 = True
+        self.display1 = False
         self.player1 = None
         self.player2 = None
         self.firstHoleHit = False
         
+        # Maximum allowed force 
+        self.maxApplied = 100
         
   
     # Return guide lines position
@@ -138,10 +142,6 @@ class Pygame():
     def mouseReleased(self):
         # Released for cue strike
         if not self.dragWhiteBall:
-            distX = self.cue.x1 - self.whiteBall.rect.centerx
-            distY = self.cue.y1 - self.whiteBall.rect.centery
-            # force of cue stick depends on its distance from the whiteBall
-            self.forceApplied = (distX**2+distY**2)**0.5 * 0.4
             
             # bool vales switch
             self.cueStriking = True
@@ -187,6 +187,15 @@ class Pygame():
             dragDist = (dragX1Dist**2 + dragY1Dist**2)**0.5
             cuePosToWhiteX = self.x1CueInitial - self.whiteBall.rect.centerx
             cuePosToWhiteY = self.y1CueInitial - self.whiteBall.rect.centery
+            
+            distX = self.cue.x1 - self.whiteBall.rect.centerx
+            distY = self.cue.y1 - self.whiteBall.rect.centery
+            # force of cue stick depends on its distance from the whiteBall
+            self.forceApplied = (distX**2+distY**2)**0.5 * 0.4
+            if self.forceApplied >= self.maxApplied:
+                self.forceApplied = self.maxApplied
+                
+
             
             # Make sure the mouse drags in same direction as cue stick
             if dragX1Dist * cuePosToWhiteX >= 0 and \
@@ -288,6 +297,7 @@ class Pygame():
                 self.cueStriking = False
                 self.showGuideLines = True
                 self.startCheck = True
+                self.forceApplied = 0
                 
         # Check if there is still moving balls after cue strike:
         # If none, then next player's turn
@@ -348,6 +358,18 @@ class Pygame():
             y = self.whiteBall.rect.centery
             r = ballClass.Ball.radius
             pygame.draw.circle(screen, (255, 255, 255), (x, y), r, 0)
+
+        # Show force font
+        font = pygame.font.Font('cmunti.ttf', 20)
+        textForce = font.render('Force: ', True, (0, 0, 0))
+        startForceX = self.width/5*3
+        startForceY = 1.5*self.margin+self.boardHeight
+        screen.blit(textForce, (startForceX, startForceY))
+        barWidth = self.boardWidth/6
+        barHeight = self.margin
+        width = self.forceApplied/self.maxApplied * barWidth
+        pygame.draw.rect(screen, (204, 0, 102), \
+                        (startForceX + 70, startForceY, width, barHeight), 0)
          
         # If no player has hit a ball yet
         if self.player1 == None:
@@ -385,7 +407,7 @@ class Pygame():
         self.title = title
         self.bgColor = (102, 178, 255)
         pygame.init()
-    
+
            
     # Run main function    
     def run(self):
@@ -428,8 +450,8 @@ class Pygame():
 
 
 def main():
-    game = Pygame()
-    game.run()
+    startMode = startScreen.startScreen()
+    startMode.run()
 
 if __name__ == '__main__':
     main()

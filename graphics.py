@@ -2,17 +2,14 @@ import pygame
 import math
 
 # Gameboard class
-class Gameboard(object):
-    
-    
-    
+class Gameboard(object):   
     # Initialize values for gameboard
     def __init__(self, x, y, width, height):        
         self.x = x
         self.y = y
         self.width = width
         self.height = height
-        self.friction = 0.8
+        self.friction = 1
         self.color = (33, 137, 88)
     
         
