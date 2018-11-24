@@ -1,113 +1,104 @@
+        
+        if hitAngle < strikeAngle:
+            cosAngle = math.cos(angle)
+            sinAngle = math.sin(angle)
+            ball1V = -ball1.ySpeed*sinAngle - ball1.xSpeed*cosAngle
+            ball2V = ball1.xSpeed*sinAngle - ball1.ySpeed*cosAngle
+            ball1.xSpeed = -ball1V*cosAngle
+            ball1.ySpeed = -ball1V*sinAngle
+            ball2.xSpeed = -ball2V*sinAngle
+            ball2.ySpeed = ball2V*cosAngle
+            
+            
+        if hitAngle > strikeAngle:
+            cosAngle = math.cos(angle)
+            sinAngle = math.sin(angle)
+            ball1V = -ball1.ySpeed*sinAngle - ball1.xSpeed*cosAngle
+            ball2V = ball1.ySpeed*cosAngle - ball1.xSpeed*sinAngle
+            ball1.xSpeed = -ball1V*cosAngle
+            ball1.ySpeed = -ball1V*sinAngle
+            ball2.xSpeed = -ball2V*sinAngle
+            ball2.ySpeed = ball2V*cosAngle
+            
+        if hitAngle == strikeAngle:
+            ball2.xSpeed = -ballV*math.cos(hitAngle)
+            ball2.ySpeed = ballV*math.sin(hitAngle)
+            ball1.xSpeed = -ballV*math.cos(hitAngle)*1/5
+            ball1.ySpeed = ballV*math.sin(hitAngle)*1/5
+    
+    
+    
+    # If two colliding balls are in same x or y level        
+    elif ball1.rect.x == ball2.rect.x or ball1.rect.y == ball2.rect.y:
+        ballV = (ball1.xSpeed**2 + ball1.ySpeed**2)**0.5
+        ball1.ySpeed, ball2.xSpeed = ball1.ySpeed, ball1.xSpeed
+        ball1.xSpeed, ball2.ySpeed = 0, 0
+        
+
+# Change speed and direction when ball touches borders        
+def collideBorder(ball, margin, boardHeight, boardWidth):
+    if type(ball) != pygame.sprite.Group:
+        listRange = borderCheck(ball, margin, boardHeight, boardWidth)
+        if listRange[1] == False:
+            ball.ySpeed = -ball.ySpeed
+        if listRange[0] == False:
+            ball.xSpeed = -ball.xSpeed
+
+# Return list of two bool values to check if ball is in board xrange and yrange        
+def borderCheck(ball, margin, boardHeight, boardWidth):
+    innnerMarign = graphics.Border.innerMargin
+    distCorner = graphics.Border.distToCornerSide
+    extend = graphics.Border.extend
+    holeR = graphics.Hole.radius
+    
+    if type(ball) != pygame.sprite.Group:
+        listRange = [True, True]
+        if ball.rect.centerx >= boardWidth/2 + margin + holeR or ball.rect.centerx <= boardWidth/2 + margin - holeR:
+            if ball.rect.y <= margin +  or ball.rect.y >= boardHeight+margin-2*ball.radius:
+                listRange[1] = False
+            elif ball.rect.x <= margin or \
+            ball.rect.x >= boardWidth+margin-2*ball.radius:
+                listRange[0] = False
+        return listRange
+    
+
+# Function to ensure ball doesn't go out of bounds right after collision call    
+def adjustBorderCollision(ball, oldX, oldY, margin, boardHeight, boardWidth):
+    listRange = borderCheck(ball, margin, boardHeight, boardWidth)
+    if listRange[0] == False:
+        if ball.rect.x <= margin:
+           ball.rect.x += margin - ball.rect.x
+        elif ball.rect.x >= boardWidth+margin-2*ball.radius:
+            ball.rect.x -= ball.rect.x + 2*ball.radius - boardWidth - margin
+    if listRange[1] == False:
+        if ball.rect.y <= margin:
+            ball.rect.y += margin - ball.rect.y
+        elif ball.rect.y >= boardHeight+margin-2*ball.radius:
+            ball.rect.y -= ball.rect.y + 2*ball.radius - boardHeight - margin
+    
 
 
-# Simple splash screen with Python and Pygame
 
-# --- Press ESCAPE to exit ---
-
-# initialize
-import pygame
-pygame.init()
-pygame.mouse.set_visible(0)
-
-# colours
-lightblue = 130, 150, 255
-white = 255,255,255
-black = 0,0,0
-red = 255,0,0
-grey = 119,119,119
-
-# background screen
-def backGroundScreen(colour):
-   '''Setup background screen
-   In: colourTUPLE.
-   Return: screenOBJ'''
-   screen = pygame.display.set_mode((320,240))  
-   backgrnd = colour
-   screen.fill(backgrnd)
-   pygame.display.flip()
-   return screen
-
-background = lightblue
-screen = backGroundScreen(background)
-
-# Create a font
-# When font name = None, Pygame returns a default font
-def getFont(name = None, size = 20):
-   '''Create a font object'''
-   font = pygame.font.Font(name, size)
-   return font
-
-# Render the text
-def putText(fontOBJ, message = "Test", position = (10,10),
-            forecolour = black, backcolour = white):
-   '''Create a font object'''
-   antialias = True
-   text = fontOBJ.render(message, antialias, forecolour, backcolour)
-   # Create a rectangle
-   textRect = text.get_rect()
-   textRect.topleft = position
-   # Blit the text
-   screen.blit(text, textRect)
-   pygame.display.update()
-
-
-# Create a font and render the header line
-
-headerfont = getFont(None,34)
-header = "Ben NanoNote"
-position = 10,10
-putText(headerfont, header, position, 
-	forecolour = red,	
-	backcolour = background)
-
-# Now the body text
-
-bodylines = [
-	[(140, 80), "Open source software"],
-	[(140, 100), "Copyleft schematics"],
-	[(140, 120), "Linux"]]
-bodyfont = getFont(None, 22)
-for line in bodylines:
-   position, text = line
-   putText(bodyfont, text, position,
-           forecolour = white,
-	   backcolour = background )
-
-# Now the footer text
-
-footerfont = getFont(None, 18)
-footerlines = [
-	[(10,200), "This demonstration powered by"],
-	[(10,215), "Python and Pygame"]]
-for line in footerlines:
-    position, text = line
-    putText(footerfont, text, position,
-	backcolour = background)
-
-# Draw the 'Ben' symbol
-
-linesToDraw = [
-	[(20, 80), (120, 80)],
-	[(67, 60), (67, 160)],
-	[(55, 140), (80, 140)],
-	[(67, 80), (20, 160)],
-	[(67, 80), (120, 160)]
-	]
-
-colour = grey
-width = 10
-for line in linesToDraw:
-    start, end = line
-    pygame.draw.line(
-  	screen, colour, start, end, 
-	width)
-pygame.display.update()
-
-# Wait for keypress
-# Loop until keypress = ESCAPE
-done = False
-while not done:
-   for event in pygame.event.get():
-      if event.type == pygame.KEYDOWN:
-         if (event.key == pygame.K_ESCAPE):
-            done = True
+# Function to ensure two balls don't overlap right after collision call            
+def adjustCollision(ball1, ball2, oldX, oldY):
+    dist = distance(ball1.rect.x, ball1.rect.y, ball2.rect.x, ball2.rect.y)
+    triSide = abs(ball2.rect.x - ball1.rect.x)
+    angle = math.acos(triSide/dist)
+    xDiff = abs(ball1.radius*2*math.cos(angle) - dist*math.cos(angle))
+    yDiff = abs(ball1.radius*2*math.sin(angle) - dist*math.cos(angle))
+    
+    if oldX <= ball2.rect.x and oldY <= ball2.rect.y:
+        ball1.rect.x -= xDiff
+        ball1.rect.y -= yDiff
+        
+    elif oldX <= ball2.rect.x and oldY >= ball2.rect.y:
+        ball1.rect.x -= xDiff
+        ball1.rect.y += yDiff
+        
+    elif oldX >= ball2.rect.x and oldY >= ball2.rect.y:
+        ball1.rect.x += xDiff
+        ball1.rect.y += yDiff
+        
+    elif oldX >= ball2.rect.x and oldY <= ball2.rect.y:
+        ball1.rect.x += xDiff
+        ball1.rect.y -= yDiff

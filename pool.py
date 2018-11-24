@@ -6,6 +6,7 @@ import ballClass
 import graphics
 import text
 import startScreen 
+import endScreen
 
 # Pygame class                   
 class Pygame():
@@ -21,10 +22,14 @@ class Pygame():
         self.ballGroup = pygame.sprite.Group() 
         self.holeGroup = pygame.sprite.Group()
         
+        # Initialize borders
+        self.border = graphics.Border(self.width, \
+                      self.height, self.margin, self.boardHeight)
+        
         
         # Add holes to sprite group
         listPos = positions.holePositions(self.margin, \
-                                          self.boardWidth, self.boardHeight)           
+        graphics.Border.innerMargin, self.boardWidth, self.boardHeight)           
         for pos in listPos:
             self.holeGroup.add(graphics.Hole(pos[0], pos[1]))
         
@@ -217,7 +222,7 @@ class Pygame():
                                            ball.rect.x, ball.rect.y)
                 
                 # Ball falls into hole if slightly overlaps with hole
-                if dist <= (hole.radius + 15)*3/5:
+                if dist <= (hole.radius + ballClass.Ball.radius)*3/5:
                     
                     # Check whether this is first ball in hole
                     if not self.firstHoleHit:
@@ -236,8 +241,9 @@ class Pygame():
                             self.player1 = text.Player('striped', 1, [])
                             self.player2 = text.Player('solid', 2, [])
                     
-                    # Add score to player        
-                    if self.display1 and ball.color != (255, 255, 255):
+                    # Add score to player (Player 1 playing)       
+                    if self.display1 and ball.color != (255, 255, 255) and \
+                    ball.color != (0,0,0):
                         
                         # Check the player strikes the correct ball type
                         if (self.player1.type == 'striped' and \
@@ -246,20 +252,45 @@ class Pygame():
                         type(ball) == ballClass.Ball):                   
                             
                             self.player1.ballList += [[ball.number, ball.color]]
+                            # Player continues only if correct ball is stiked
+                            text.Player.playerContinue = True
+                            
+                        # Otherwise add point to opponent    
+                        else:
+                            self.player2.ballList += [[ball.number, ball.color]]
                             
                             
-                    elif not self.display1 and ball.color != (255, 255, 255):
+                    # Add score to player (Player 2 playing)
+                    elif not self.display1 and ball.color != (255, 255, 255) \
+                    and ball.color != (0, 0, 0):
                         if (self.player2.type == 'striped' and \
                         type(ball) != ballClass.Ball) or \
                         (self.player2.type == 'solid' and \
                         type(ball) == ballClass.Ball):
                         
                             self.player2.ballList += [[ball.number, ball.color]]
+                            # Player continues only if correct ball is stiked
+                            text.Player.playerContinue = True
+                            
+                        # Otherwise add point to opponent    
+                        else:
+                            self.player1.ballList += [[ball.number, ball.color]]
 
-                    # If colored ball is stiken, player continues playing       
+                    # Kill ball if ball is not white      
                     if ball.color != (255, 255, 255): 
                         ball.kill()
-                        text.Player.playerContinue = True
+                        
+                    elif ball.color == (0, 0, 0):
+                        if len(self.ballGroup) > 2:
+                            ball.kill()
+                            endMode = endScreen.endScreen(currDisplay, True)
+                            endMode.run()
+                        else:
+                            ball.kill()
+                            endMode = endScreen.endScreen(currDisplay, False)
+                            endMode.run()
+                            
+                            
                     
                     # Rule violation if white ball is striken    
                     elif ball.color == (255, 255, 255):
@@ -271,7 +302,8 @@ class Pygame():
         # Check collisions with balls, change speed and direction if necessary,
         # update ball position
         self.ballGroup.update(self.ballGroup, self.holeGroup, \
-        self.gameboard.friction)
+        self.gameboard.friction, self.dragWhiteBall, \
+        self.margin, self.boardHeight, self.boardWidth)
         
         
         # Check for collisions with borders
@@ -326,9 +358,7 @@ class Pygame():
                                             listPos[3])
                     linesPos = self.guideLinesPos()
                     self.guideLines = graphics.GuideLines(linesPos[0], \
-                                                        linesPos[1], self.angle)
-                                                        
-                        
+                                                        linesPos[1], self.angle)                        
                                                         
                 self.whiteBall.violation = True
                 self.whiteBall.holeViolation  = False
@@ -337,12 +367,12 @@ class Pygame():
                 self.hasHit = True
         
 
-           
-            
+                       
     
     # Draw and update the game board    
     def redrawAll(self, screen):
         self.gameboard.draw(screen)
+        self.border.draw(screen)
         self.holeGroup.draw(screen)
         self.ballGroup.draw(screen)
         
@@ -427,10 +457,7 @@ class Pygame():
             time = clock.tick(self.fps)
             self.timerFired(time)
             for event in pygame.event.get():
-                if event.type == pygame.KEYDOWN:
-                    self.whiteBall.xSpeed = 50
-                    self.whiteBall.ySpeed = 0
-                elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+                if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
                     self.mouseReleased()
                 elif event.type == pygame.QUIT:
                     playing = False
@@ -449,6 +476,7 @@ class Pygame():
         pygame.quit()
 
 
+# Run the game
 def main():
     startMode = startScreen.startScreen()
     startMode.run()

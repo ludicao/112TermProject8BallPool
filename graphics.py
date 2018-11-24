@@ -89,5 +89,126 @@ class GuideLines():
             
             pygame.draw.lines(screen, self.color, False, \
                               [(x1, y1), (x2, y2)], self.thickness)
+
+
+# Draw polygon whose sides are gameboard's borders                              
+class Border():
+    
+    innerMargin = 60    # Inner margin of the gameboard
+    
+    # Two values determine how 'pushed in' the corner four holes are
+    # Calculated values based on hole radius and inner margin
+    distToCornerSide = (2*Hole.radius + 2**0.5*innerMargin) / 2**0.5
+    extend = (distToCornerSide + 2*Hole.radius - innerMargin) / \
+             (2*math.cos(math.pi/4))
+    
+    # Initialize variables for border size calculations and other values
+    def __init__(self, screenWidth, screenHeight, outerMargin, boardHeight):
+        self.screenWidth = screenWidth
+        self.screenHeight = screenHeight
+        self.boardHeight = boardHeight
+        self.outerMargin = outerMargin
+        self.color = (210, 158, 52)
+        
+    
+    # Return list of vertices of the top and bottom of the border polygon
+    def calculateUpDown(self, starty, r, extend):
+        outerMargin = self.outerMargin
+        radius = Hole.radius
+        extendX = Border.extend
+        
+        firstx = self.screenWidth - outerMargin - \
+        Border.distToCornerSide + Border.extend*math.cos(math.pi/4)
+        firsty = starty
+        
+        secondx = firstx - extendX*math.cos(math.pi/4)
+        secondy = firsty + extend*math.cos(math.pi/4)
+        
+        thirdx = self.screenWidth/2 + 2*radius
+        thirdy = secondy
+        
+        fourthx = self.screenWidth/2 + radius
+        fourthy = thirdy -r
+        
+        fifthx = fourthx - 2*radius
+        fifthy = fourthy
+        
+        sixthx = fifthx - radius
+        sixthy = fifthy + r
+        
+        seventhx = outerMargin + Border.distToCornerSide
+        seventhy = sixthy
+        
+        eigthx = seventhx - extendX*math.cos(math.pi/4)
+        eigthy = seventhy - extend*math.cos(math.pi/4)
+            
+        return [(firstx, firsty),
+                (secondx, secondy),
+                (thirdx, thirdy),
+                (fourthx, fourthy),
+                (fifthx, fifthy),
+                (sixthx, sixthy),
+                (seventhx, seventhy),
+                (eigthx, eigthy)]
+                
+    
+    # Return list of vertices of the left and right side of the border polygon
+    def calculateLeftRight(self, startx, extend):
+        outerMargin = self.outerMargin
+        extendY = Border.extend
+        radius = Hole.radius
+        
+        firstx = startx
+        firsty = outerMargin + Border.distToCornerSide - extendY*math.cos(math.pi/4)
+        
+        secondx = firstx + extend*math.cos(math.pi/4)
+        secondy = firsty + extendY*math.cos(math.pi/4)
+        
+        thirdx = secondx
+        thirdy = secondy + (self.boardHeight-2*Border.distToCornerSide)
+        
+        fourthx = thirdx - extend*math.cos(math.pi/4)
+        fourthy = thirdy + extendY*math.cos(math.pi/4)
+        
+        return [(firstx, firsty),
+                (secondx, secondy),
+                (thirdx, thirdy),
+                (fourthx, fourthy)]
+    
+    
+    # Append four list of vertices of the four sides of the board to a new list   
+    def calculatePoints(self):
+        outerMargin = self.outerMargin
+        listPoints = []
+        starty = outerMargin + Border.innerMargin - Border.extend*math.cos(math.pi/4)
+        topPoints = self.calculateUpDown(starty, Hole.radius, Border.extend)
+        listPoints.extend(topPoints)
+        
+        startx = outerMargin + Border.innerMargin - Border.extend*math.cos(math.pi/4)
+        leftPoints = self.calculateLeftRight(startx, Border.extend)
+        listPoints.extend(leftPoints)
+        
+        starty = outerMargin + self.boardHeight - \
+        Border.innerMargin + Border.extend*math.cos(math.pi/4)
+        downPoints = self.calculateUpDown(starty, \
+        -Hole.radius, -Border.extend)
+        listPoints.extend(reversed(downPoints))
+        
+        startx = self.screenWidth - outerMargin - \
+        Border.innerMargin + Border.extend*math.cos(math.pi/4)
+        rightPoints = \
+        self.calculateLeftRight(startx, -Border.extend)
+        listPoints.extend(reversed(rightPoints))
+        
+        return listPoints
+     
+    # Draw the border polygon using the list of vertices
+    def draw(self, screen):
+        allPoints = self.calculatePoints()
+        pygame.draw.polygon(screen, self.color, allPoints, 0)
+        
+        
+        
+        
         
         

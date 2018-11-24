@@ -89,12 +89,12 @@ def guideLinePosition(angle, xCue, yCue, whiteBallX, whiteBallY, distFromWhite):
 
 
 # Calculate hole positions    
-def holePositions(margin, boardWidth, boardHeight):
-    xFirstCol = margin + graphics.Hole.radius
-    xSecondCol = boardWidth/2 + margin
-    xThirdCol = boardWidth + margin - graphics.Hole.radius
-    yFirstRow = margin + graphics.Hole.radius
-    ySecondRow = boardHeight + margin - graphics.Hole.radius
+def holePositions(outerMargin, innerMargin, boardWidth, boardHeight):
+    xFirstCol = outerMargin + innerMargin - graphics.Hole.radius
+    xSecondCol = boardWidth/2 + outerMargin
+    xThirdCol = boardWidth + outerMargin - (innerMargin - graphics.Hole.radius)
+    yFirstRow = outerMargin + innerMargin - graphics.Hole.radius
+    ySecondRow = boardHeight + outerMargin - innerMargin + graphics.Hole.radius
         
     listPos = [(xFirstCol, yFirstRow), (xSecondCol, yFirstRow), \
                (xThirdCol, yFirstRow), (xFirstCol, ySecondRow), \

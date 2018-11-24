@@ -23,10 +23,14 @@ class startScreen():
         
         # Add holes to sprite group
         listPos = positions.holePositions(self.margin, \
-                                          self.boardWidth, self.boardHeight) 
+        graphics.Border.innerMargin, self.boardWidth, self.boardHeight) 
                                           
         for pos in listPos:
             self.holeGroup.add(graphics.Hole(pos[0], pos[1]))
+            
+        # Initialize borders
+        self.border = graphics.Border(self.width, \
+                      self.height, self.margin, self.boardHeight)
         
         # Initialize button values                                  
         self.buttonColor = (51, 153, 255)
@@ -69,6 +73,7 @@ class startScreen():
     # Display the drawings    
     def redrawAll(self, screen):
         self.gameboard.draw(screen)
+        self.border.draw(screen)
         self.holeGroup.draw(screen)
         self.drawText(screen)
         self.drawButtons(screen)

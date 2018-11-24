@@ -80,7 +80,7 @@ class Ball(pygame.sprite.Sprite):
 
 
     # Update ball position, speed, angle    
-    def update(self, balls, holes, fric):        
+    def update(self, balls, holes, fric, dragWhite, margin, boardHeight, boardWidth):        
         # Check if collision occurs
         for ball in balls:
             if ball != self and pygame.sprite.collide_circle(self, ball):
@@ -97,17 +97,30 @@ class Ball(pygame.sprite.Sprite):
                     if self.color == (255, 255, 255):
                         ball.violation = False                  
                     collisions.collide(self,  ball)
+        
+        collisions.collideBorder(self, margin, boardHeight, boardWidth)
 
         
         oldX = self.rect.x
         oldY = self.rect.y
-        self.rect.x += self.xSpeed
-        self.rect.y += self.ySpeed        
         # Update ball position:
+        self.rect.x += self.xSpeed
+        self.rect.y += self.ySpeed  
+        
+        # Make sure ball doesn't overlap another ball when its position is 
+        # updated after the collision method
         for ball in balls:
-            if self != ball and pygame.sprite.collide_circle(self, ball): 
-                collisions.adjustCollision(self, ball, oldX, oldY, Ball.radius)
-    
+            if not dragWhite:
+                if self != ball and pygame.sprite.collide_circle(self, ball): 
+                    collisions.adjustCollision(self, ball, oldX, oldY)
+
+        # Make sure ball doesn't go beyond the border when its position just 
+        # changed after the collideBorder method
+        listRange = collisions.borderCheck(self, margin, boardHeight, boardWidth)
+        if False in listRange:
+            collisions.adjustBorderCollision(self, oldX, \
+                        oldY, margin, boardHeight, boardWidth)
+                    
 
         
         # Apply friction to ball speed
