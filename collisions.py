@@ -342,8 +342,8 @@ def borderCheck(ball, margin, boardHeight, boardWidth):
                 # Collides
                 if distPointLine(pos[0], pos[1], pos[2], x, y) <= ball.radius:
                     listRange[2] = False
-                elif distPointLine(pos2[0], pos2[1],pos2[2], x, y) 
-                    <= ball.radius:
+                elif distPointLine(pos2[0], pos2[1],pos2[2], x, y) \
+                <= ball.radius:
                     listRange[3] = False
              
             # Upper middle sloped borders

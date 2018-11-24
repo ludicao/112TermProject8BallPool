@@ -79,6 +79,7 @@ class Pygame():
         self.dragWhiteBall = False
         self.whiteOnPress = False
         self.startCheck = False
+        self.maxDrag = False
         self.forceApplied = 0
         
         # Initialize cue stick
@@ -87,6 +88,7 @@ class Pygame():
         self.cueSpeed = 30
         listPos = self.cuePositionNotPressed()
         self.cue = graphics.Cue(listPos[0], listPos[1], listPos[2], listPos[3])
+        self.minForceApplied = self.cue.distanceFromWhite * 0.4
         
         # Initialize guideLines
         listPosLines = self.guideLinesPos()
@@ -145,9 +147,9 @@ class Pygame():
     
     # Cue stick strikes when mouse is released
     def mouseReleased(self):
-        # Released for cue strike
-        if not self.dragWhiteBall:
-            
+        # Released for cue strike and minimum force is applied
+        if not self.dragWhiteBall and self.forceApplied > self.minForceApplied:
+        
             # bool vales switch
             self.cueStriking = True
             self.hasPressed = False
@@ -155,8 +157,11 @@ class Pygame():
         
         # Released for white ball placement        
         if self.dragWhiteBall:
-            self.whiteOnPress = False
-            self.dragWhiteBall = False
+            # Check if white ball is placed within correct bounds
+            if positions.boundsForWhite(self.margin, \
+                                        self.boardWidth, self.boardHeight):
+                self.whiteOnPress = False
+                self.dragWhiteBall = False
 
         
 
@@ -197,14 +202,17 @@ class Pygame():
             distY = self.cue.y1 - self.whiteBall.rect.centery
             # force of cue stick depends on its distance from the whiteBall
             self.forceApplied = (distX**2+distY**2)**0.5 * 0.4
-            if self.forceApplied >= self.maxApplied:
+            if self.forceApplied > self.maxApplied:
                 self.forceApplied = self.maxApplied
+                self.maxDrag = True
+            else:
+                self.maxDrag = False
                 
 
             
             # Make sure the mouse drags in same direction as cue stick
             if dragX1Dist * cuePosToWhiteX >= 0 and \
-            dragY1Dist * cuePosToWhiteY >= 0:
+            dragY1Dist * cuePosToWhiteY >= 0 and not self.maxDrag:
                 self.cue.x1 = self.x1CueInitial + dragDist*math.cos(self.angle)
                 self.cue.x2 = self.x2CueInitial + dragDist*math.cos(self.angle)
                 self.cue.y1 = self.y1CueInitial - dragDist*math.sin(self.angle)
@@ -277,22 +285,28 @@ class Pygame():
                             self.player1.ballList += [[ball.number, ball.color]]
 
                     # Kill ball if ball is not white      
-                    if ball.color != (255, 255, 255): 
+                    if ball.color != (255, 255, 255) and ball.color != (0,0,0): 
                         ball.kill()
-                        
+                     
+                    # When 8-pool is hit into hole
                     elif ball.color == (0, 0, 0):
-                        if len(self.ballGroup) > 2:
+                        # Player wins
+                        if (self.display1 and len(self.player1.ballList) == 7) \
+                        or (not self.display1 and len(self.player2.ballList)) \
+                        == 7:
                             ball.kill()
-                            endMode = endScreen.endScreen(currDisplay, True)
+                            endMode = endScreen.endScreen(self.display1, True)                        
                             endMode.run()
-                        else:
+                            
+                        # Illegal situation: opponent automatically wins
+                        else :
                             ball.kill()
-                            endMode = endScreen.endScreen(currDisplay, False)
+                            endMode = endScreen.endScreen(self.display1, False)
                             endMode.run()
                             
                             
                     
-                    # Rule violation if white ball is striken    
+                    # Rule violation if white ball falls into hole    
                     elif ball.color == (255, 255, 255):
                         self.whiteBall.holeViolation = True
                         self.xSpeed = 0
@@ -349,9 +363,12 @@ class Pygame():
                     self.display1 = not self.display1
                 text.Player.playerContinue = False
 
-                if self.whiteBall.violation:
+                # If white hits hole or misses balls then mouse controls white
+                if self.whiteBall.violation or self.whiteBall.holeViolation:
                     self.dragWhiteBall = True 
-                
+                    
+                # Include this so cue appears at depending on current position 
+                # of the cursor instead of its last position before strike    
                 if self.hasHit == False and self.hasPressed == False:
                     listPos = self.cuePositionNotPressed()
                     self.cue = graphics.Cue(listPos[0], listPos[1], listPos[2],\
@@ -359,10 +376,11 @@ class Pygame():
                     linesPos = self.guideLinesPos()
                     self.guideLines = graphics.GuideLines(linesPos[0], \
                                                         linesPos[1], self.angle)                        
-                                                        
-                self.whiteBall.violation = True
-                self.whiteBall.holeViolation  = False
 
+                self.whiteBall.violation = True
+                self.whiteBall.holeViolation = False
+
+            # Balls are still coliding. No move should be played yet
             else:
                 self.hasHit = True
         

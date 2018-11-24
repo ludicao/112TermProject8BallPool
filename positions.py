@@ -1,5 +1,7 @@
 import graphics
 import math
+import pygame
+import ballClass
 
 # Calculate positions of initial colored balls    
 def ballStartPositions(width, margin, height):     
@@ -101,6 +103,22 @@ def holePositions(outerMargin, innerMargin, boardWidth, boardHeight):
                (xSecondCol, ySecondRow), (xThirdCol, ySecondRow)]
                
     return listPos
+    
+# Return True if white ball is within bounds of the board
+def boundsForWhite(margin, boardWidth, boardHeight):
+    x = pygame.mouse.get_pos()[0]
+    y = pygame.mouse.get_pos()[1]
+    upBound = margin + graphics.Border.innerMargin + ballClass.Ball.radius
+    lowBound = boardHeight + margin - \
+               graphics.Border.innerMargin - ballClass.Ball.radius
+    leftBound = margin + graphics.Border.innerMargin + ballClass.Ball.radius
+    rightBound = boardWidth + margin - \
+                graphics.Border.innerMargin - ballClass.Ball.radius
+    if x < rightBound and x > leftBound and y > upBound and y < lowBound:
+        return True
+    else:
+        return False
+        
     
     
     
