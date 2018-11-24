@@ -5,13 +5,13 @@ import ballClass
 
 # Calculate positions of initial colored balls    
 def ballStartPositions(width, margin, height):     
-    r = 15
+    r = ballClass.Ball.radius
     d = 2*r
     distanceX = d*math.cos(math.pi/6)
     distanceY = d*math.sin(math.pi/6)
     
-    firstX = (width-2*margin)/3*2 + margin
-    firstY1 = height/2
+    firstX = (width-2*margin-2*graphics.Border.innerMargin)*0.73 + margin
+    firstY1 = (height-margin)/2
     
     secondX = firstX + distanceX
     secondY1 = firstY1 + distanceY
@@ -37,14 +37,14 @@ def ballStartPositions(width, margin, height):
         
         
     # Add some distance between balls
-    return [(firstX, firstY1),
-            (secondX+4, secondY1+4), (secondX+4, secondY2-4),
-            (thirdX+8, thirdY1+8), (thirdX+8, thirdY2), (thirdX+8, thirdY3-8),
-            (fourthX+12, fourthY1+12), (fourthX+12, fourthY2+8), \
-            (fourthX+12, fourthY3-8),(fourthX+12, fourthY4-12), 
-            (fifthX+16, fifthY1+16), (fifthX+16, fifthY2+8), \
-            (fifthX+16, fifthY3),(fifthX+16, fifthY4-8), \
-            (fifthX+16, fifthY5-16)]
+    return  [(firstX, firstY1),
+            (secondX+4, secondY1+2), (secondX+4, secondY2-2),
+            (thirdX+8, thirdY1+4), (thirdX+8, thirdY2), (thirdX+8, thirdY3-4),
+            (fourthX+12, fourthY1+6), (fourthX+12, fourthY2+2), \
+            (fourthX+12, fourthY3-2),(fourthX+12, fourthY4-6), 
+            (fifthX+16, fifthY1+8), (fifthX+16, fifthY2+4), \
+            (fifthX+16, fifthY3),(fifthX+16, fifthY4-4), \
+            (fifthX+16, fifthY5-8)]
             
 
             
@@ -117,6 +117,7 @@ def boundsForWhite(margin, boardWidth, boardHeight):
     if x < rightBound and x > leftBound and y > upBound and y < lowBound:
         return True
     else:
+        print('adf')
         return False
         
     

@@ -38,18 +38,18 @@ class startScreen():
         self.buttonHeight = 50
         self.xMin = self.width/2 - self.buttonWidth/2
         self.xMax = self.width/2 + self.buttonWidth/2
-        self.yMin = self.height/2 - self.buttonHeight/2
-        self.yMax = self.height/2 + self.buttonHeight/2
+        self.yMin = self.height*0.45 - self.buttonHeight/2
+        self.yMax = self.height*0.45 + self.buttonHeight/2
             
             
     # init values of the Pygame class
-    def __init__(self, width=800, height=640, fps=50, title="112 Pygame Game"):
+    def __init__(self, width=1000, height=640, fps=50, title="112 Pygame Game"):
         self.width = width
         self.height = height
         self.margin = 40
         self.fps = fps
         self.title = title
-        self.bgColor = (102, 178, 255)
+        self.bgColor = 	(230, 230, 250)    # Lavendar
         pygame.init()
      
     # Draw the welcome text

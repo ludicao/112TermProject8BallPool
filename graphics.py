@@ -10,7 +10,7 @@ class Gameboard(object):
         self.width = width
         self.height = height
         self.friction = 1
-        self.color = (33, 137, 88)
+        self.color = (134, 46, 2)    # Dark brown
     
         
     # Draw the game board
@@ -108,7 +108,7 @@ class Border():
         self.screenHeight = screenHeight
         self.boardHeight = boardHeight
         self.outerMargin = outerMargin
-        self.color = (210, 158, 52)
+        self.color = (63, 181, 33)    # Dark green
         
     
     # Return list of vertices of the top and bottom of the border polygon

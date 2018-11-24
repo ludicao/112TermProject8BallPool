@@ -72,11 +72,9 @@ class Ball(pygame.sprite.Sprite):
         dest = Ball.radius - Ball.innerRadius
         self.image.blit(self.imageWhite,(dest, dest))
         
-        # Blitting position differs if it's a two digit or one digit number
-        if len(str(self.number)) == 2:
-            self.image.blit(text, (10, 8))
-        else:
-            self.image.blit(text, (12, 8))
+        x = side/2 - text.get_rect().width/2
+        y = side/2 - text.get_rect().height/2
+        self.image.blit(text, (x, y))
 
 
     # Update ball position, speed, angle    
@@ -227,9 +225,6 @@ class stripedBalls(Ball):
         destText = (side**2+side**2)**0.5*math.cos(math.pi/4)
         
         
-        # Blitting positions differs if number is two digits or one
-        if len(str(self.number)) == 2:
-            self.image.blit(text, (10, 8))
-        else:
-            self.image.blit(text, (12, 8))
-          
+        x = side/2 - text.get_rect().width/2
+        y = side/2 - text.get_rect().height/2
+        self.image.blit(text, (x, y))

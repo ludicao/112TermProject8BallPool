@@ -84,6 +84,7 @@ class Player():
                 startx = int(boardWidth/8 + 3*i*radius + screenMargin)
                 self.drawSolid(screen, startx, starty, \
                 self.ballList[i][0], self.ballList[i][1])
+    
                 
     # Draw solid balls
     def drawSolid(self, screen, startx, starty, number, color):
@@ -98,12 +99,12 @@ class Player():
         # White circle on second layer                  
         pygame.draw.circle(screen, (255, 255, 255), \
         (startx, starty), innerRadius, 0)
-        
-        # Blitting position differs if it's a two digit or one digit number
-        if len(str(number)) == 2:
-            screen.blit(textNum, (startx-innerRadius+2, starty-innerRadius+2))
-        else:
-            screen.blit(textNum, (startx-innerRadius+2, starty-innerRadius+2))
+       
+       
+        # Number is in center of ball 
+        x = startx + ballClass.Ball.radius/2 - textNum.get_rect().width/2
+        y = starty + ballClass.Ball.radius/2 -textNum.get_rect().height/2
+        screen.blit(textNum, (startx-innerRadius+2, starty-innerRadius+2))
         
     # Draw striped balls
     def drawStriped(self, screen, startx, starty, number, color):        
@@ -123,12 +124,11 @@ class Player():
         # White circle on thrid layer
         pygame.draw.circle(screen, (255, 255, 255),\
                           (startx, starty), innerRadius, 0)
-                        
-        # Blitting positions differs if number is two digits or one
-        if len(str(number)) == 2:
-            screen.blit(textNum, (startx-innerRadius+2, starty-innerRadius+2))
-        else:
-            screen.blit(textNum, (startx-innerRadius+2, starty-innerRadius+2))
+       
+        # Number is in center of ball                 
+        x = startx + ballClass.Ball.radius/2 - textNum.get_rect().width/2
+        y = starty + ballClass.Ball.radius/2 -textNum.get_rect().height/2
+        screen.blit(textNum, (startx-innerRadius+2, starty-innerRadius+2))
             
 
             

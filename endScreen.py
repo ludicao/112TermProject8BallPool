@@ -13,7 +13,7 @@ class endScreen():
         self.buttonColor1 = (51, 153, 255)
         self.buttonColor2 = (51, 153, 255)
         self.buttonWidth = 100
-        self.buttonHeight = 50
+        self.buttonHeight = 40
         
         if self.currDisplay:
             self.player = 'Player 1'
@@ -24,19 +24,19 @@ class endScreen():
             self.currPlayerWins = True
             self.xMin = self.width/2 - self.buttonWidth/2
             self.xMax = self.width/2 + self.buttonWidth/2
-            self.yMin = self.height*0.4 - self.buttonHeight/2
-            self.yMax = self.height*0.4 + self.buttonHeight/2
+            self.yMin = self.height*0.45 - self.buttonHeight/2
+            self.yMax = self.height*0.45 + self.buttonHeight/2
         else:
             self.currPlayerWins = False
             self.xMin = self.width/2 - self.buttonWidth/2
             self.xMax = self.width/2 + self.buttonWidth/2
-            self.yMin = self.height/2 - self.buttonHeight/2
-            self.yMax = self.height/2 + self.buttonHeight/2
+            self.yMin = self.height*0.5 - self.buttonHeight/2
+            self.yMax = self.height*0.5 + self.buttonHeight/2
  
         self.x2Min = self.xMin
         self.x2Max = self.xMax
-        self.y2Min = self.yMin + self.buttonHeight + 5
-        self.y2Max = self.yMax + self.buttonHeight + 5
+        self.y2Min = self.yMin + self.buttonHeight + 20
+        self.y2Max = self.yMax + self.buttonHeight + 20
             
             
         # Initialize gameboard and sprite groups
@@ -63,13 +63,13 @@ class endScreen():
             
             
     # init values of the Pygame class
-    def __init__(self, currDisplay, bool, width=800, height=640, fps=50, title="112 Pygame Game"):
+    def __init__(self, currDisplay, bool, width=1000, height=640, fps=50, title="112 Pygame Game"):
         self.width = width
         self.height = height
         self.margin = 40
         self.fps = fps
         self.title = title
-        self.bgColor = (102, 178, 255)
+        self.bgColor = (230, 230, 250)    # Lavendar
         self.currDisplay = currDisplay
         self.bool = bool
         pygame.init()
@@ -104,7 +104,7 @@ class endScreen():
             self.height/3 - text.get_rect().height/2))
      
     
-    # Draw the startScreen button    
+    # Draw the endScreen buttons 'back' and 'play again'    
     def drawButtons(self, screen):
         pygame.draw.rect(screen, self.buttonColor1,
         (self.xMin, self.yMin, self.buttonWidth, self.buttonHeight))
@@ -123,6 +123,7 @@ class endScreen():
         yPosNew = self.y2Max - yDist/2 - text2.get_rect().height/2
         screen.blit(text2, (self.width/2 - text2.get_rect().width/2, yPosNew))
     
+    
     # Draw objects on screen    
     def redrawAll(self, screen):
         self.gameboard.draw(screen)
@@ -133,6 +134,7 @@ class endScreen():
         
     # If cursor is above button, button changes color    
     def mouseMotion(self):
+        # Back button
         cursorX = pygame.mouse.get_pos()[0]
         cursorY = pygame.mouse.get_pos()[1]
         if cursorX > self.xMin and cursorX < self.xMax and \
@@ -140,22 +142,25 @@ class endScreen():
             self.buttonColor1 = (204, 229, 255)
         else:
             self.buttonColor1 = (51, 153, 255)
-            
+        
+        # Play again button    
         if cursorX > self.x2Min and cursorX < self.x2Max and \
         cursorY < self.y2Max and cursorY> self.y2Min:
             self.buttonColor2 = (204, 229, 255)
         else:
             self.buttonColor2 = (51, 153, 255)
     
-    # If mouse if pressed on button, continue to start mode         
+    # If mouse if pressed on button, continue to start mode or play mode        
     def mousePressed(self):
         cursorX = pygame.mouse.get_pos()[0]
         cursorY = pygame.mouse.get_pos()[1]
         
+        # Return to start mode
         if cursorX > self.xMin and cursorX < self.xMax and \
         cursorY < self.yMax and cursorY > self.yMin:
             startScreen.startScreen().run()
-            
+        
+        # Return to play mode    
         if cursorX > self.x2Min and cursorX < self.x2Max and \
         cursorY < self.y2Max and cursorY> self.y2Min:
             pool.Pygame().run()

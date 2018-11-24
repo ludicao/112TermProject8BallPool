@@ -65,7 +65,7 @@ class Pygame():
             
         # Initialize white ball                       
         whiteX = self.width/4
-        whiteY = self.height/2 
+        whiteY = (self.height-self.margin)/2 
         self.whiteBall = ballClass.whiteBall(whiteX, whiteY, \
                                             (255, 255, 255), None)
         self.ballGroup.add(self.whiteBall)
@@ -96,7 +96,7 @@ class Pygame():
                           self.angle)
   
         # Initialize player character text
-        self.display1 = False
+        self.display1 = True
         self.player1 = None
         self.player2 = None
         self.firstHoleHit = False
@@ -139,9 +139,13 @@ class Pygame():
         
         # Get position of white ball when mouse is pressed while dragging white    
         if self.dragWhiteBall:
-            self.whiteBall.rect.centerx = pygame.mouse.get_pos()[0]
-            self.whiteBall.rect.centery = pygame.mouse.get_pos()[1]
-            self.whiteOnPress = True
+            
+            # Check if white ball is placed within correct bounds
+            if positions.boundsForWhite(self.margin, \
+                                        self.boardWidth, self.boardHeight):
+                self.whiteBall.rect.centerx = pygame.mouse.get_pos()[0]
+                self.whiteBall.rect.centery = pygame.mouse.get_pos()[1]
+                self.whiteOnPress = True
             
 
     
@@ -157,6 +161,7 @@ class Pygame():
         
         # Released for white ball placement        
         if self.dragWhiteBall:
+
             # Check if white ball is placed within correct bounds
             if positions.boundsForWhite(self.margin, \
                                         self.boardWidth, self.boardHeight):
@@ -447,13 +452,13 @@ class Pygame():
         
         
     # init values of the Pygame class
-    def __init__(self, width=800, height=640, fps=50, title="112 Pygame Game"):
+    def __init__(self, width=1000, height=640, fps=50, title="112 Pygame Game"):
         self.width = width
         self.height = height
         self.margin = 40
         self.fps = fps
         self.title = title
-        self.bgColor = (102, 178, 255)
+        self.bgColor = 	(230, 230, 250)    # Lavendar
         pygame.init()
 
            
@@ -487,7 +492,7 @@ class Pygame():
                 elif (event.type == pygame.MOUSEMOTION and
                       event.buttons[0] == 1):
                     self.mouseDrag()
-            screen.fill((102, 178, 255))
+            screen.fill(self.bgColor)
             self.redrawAll(screen)
             pygame.display.flip()
 
