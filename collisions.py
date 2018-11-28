@@ -178,19 +178,28 @@ def collide(ball1, ball2):
 def collideBorder(ball, margin, boardHeight, boardWidth):
     if type(ball) != pygame.sprite.Group:
         listRange = borderCheck(ball, margin, boardHeight, boardWidth)
-        if listRange[1] == False:
-            ball.ySpeed = -ball.ySpeed
-        if listRange[0] == False:
-            ball.xSpeed = -ball.xSpeed
-        elif False in listRange[2:]:
+        if False in listRange[2:]:
             collideAngle(ball)
+        elif listRange[1] == False:
+            ball.ySpeed = -ball.ySpeed
+        elif listRange[0] == False:
+            ball.xSpeed = -ball.xSpeed
             
 # Change ball speed and angle when it collides with 45 degree borders
-def collideAngle(ball):       
+def collideAngle(ball):   
     if ball.xSpeed * ball.ySpeed > 0:
         ball.xSpeed, ball.ySpeed = ball.ySpeed, ball.xSpeed
     else:
-        ball.xSpeed, ball.ySpeed = -ball.ySpeed, -ball.xSpeed
+        xOriginal = ball.xSpeed
+        if ball.xSpeed > 0:
+            ball.xSpeed = -abs(ball.ySpeed)
+        else:
+            ball.xSpeed = abs(ball.ySpeed)
+        if ball.ySpeed > 0:
+            ball.ySpeed = -abs(xOriginal)
+        else:
+            ball.ySpeed = abs(xOriginal)
+        #ball.xSpeed, ball.ySpeed = -ball.ySpeed, -ball.xSpeed
         
 
 # Calculate the perpendicular distance of the ball radius to a line function
@@ -215,14 +224,14 @@ def checkDistance2(margin, distCorner, inMargin):
 def checkDistance3(margin, inMargin, holeR, boardWidth):
     a = -1
     b = -1
-    c = 2*margin + boardWidth/2 - holeR + inMargin
+    c = 2*margin + boardWidth/2 - 2*holeR + inMargin
     return [a, b, c]
      
 # Equation of upper middle 45 degree sloped border ax + by + c = 0  
 def checkDistance4(margin, inMargin, holeR, boardWidth):
     a = 1
     b = -1
-    c = inMargin - boardWidth/2 - holeR
+    c = inMargin - boardWidth/2 - 2*holeR
     return [a, b, c]
 
 # Equation of upper right 45 degree sloped border ax + by + c = 0      
@@ -241,14 +250,14 @@ def checkDistance6(margin, inMargin, boardWidth, distCorner):
  
 # Equation of lower right 45 degree sloped border ax + by + c = 0     
 def checkDistance7(margin, boardHeight, boardWidth, inMargin, distCorner):
-    a = -1
+    a = 1
     b = -1
     c = boardHeight - boardWidth + inMargin - distCorner
     return [a, b, c]
     
 # Equation of lower right 45 degree sloped border ax + by + c = 0 
 def checkDistance8(margin, boardHeight, boardWidth, inMargin, distCorner):
-    a = -1
+    a = 1
     b = -1
     c = boardHeight - boardWidth - inMargin + distCorner
     return [a, b, c]
@@ -257,14 +266,14 @@ def checkDistance8(margin, boardHeight, boardWidth, inMargin, distCorner):
 def checkDistance9(margin, boardHeight, boardWidth, inMargin, holeR):
     a = -1
     b = -1
-    c = boardHeight + 2*margin - inMargin + holeR + boardWidth/2
+    c = boardHeight + 2*margin - inMargin + 2*holeR + boardWidth/2
     return [a, b, c]
 
 # Equation of lower middle 45 degree sloped border ax + by + c = 0   
 def checkDistance10(margin, boardHeight, boardWidth, inMargin, holeR):
     a = 1
     b = -1
-    c = boardHeight - inMargin + holeR - boardWidth/2
+    c = boardHeight - inMargin + 2*holeR - boardWidth/2
     return [a, b, c]
  
 # Equation of lower left 45 degree sloped border ax + by + c = 0     
@@ -294,12 +303,12 @@ def regBorderCheck(ball, margin, boardHeight, boardWidth):
     y = ball.rect.centery
     
     # radius bounds for normal collision with table
-    if (x >= boardWidth/2 + margin + holeR and \
+    if (x >= boardWidth/2 + margin + holeR + extendX and \
     x <= boardWidth + margin - distCorner) \
-    or (x <= boardWidth/2 + margin - holeR and x >= margin + distCorner) or \
-    (x <= margin + distCorner and y <= boardHeight + margin - distCorner and \
-    y >= margin + distCorner) or \
-    (x >= boardWidth + margin - distCorner and\
+    or (x <= boardWidth/2 + margin - holeR - extendX and x >= \
+    margin + distCorner) or (x <= margin + distCorner and \
+    y <= boardHeight + margin - distCorner and y >= margin + distCorner) or \
+    (x >= boardWidth + margin - distCorner and \
     y <= boardHeight + margin - distCorner and y >= margin + distCorner):
         return True    
     else:
@@ -326,7 +335,7 @@ def borderCheck(ball, margin, boardHeight, boardWidth):
         # If True, then the ball collides into the normal borders of the board
         if regBorderCheck(ball, margin, boardHeight, boardWidth):
             if ball.rect.y <= margin + innerMargin or ball.rect.y >= \
-            boardHeight - innerMargin + margin - 2*ball.radius:                 
+            boardHeight - innerMargin + margin - 2*ball.radius: 
                 listRange[1] = False    # Collides to up/bottom border
             elif ball.rect.x <= margin + innerMargin or \
             ball.rect.x >= boardWidth+margin-innerMargin-2*ball.radius:
@@ -347,8 +356,9 @@ def borderCheck(ball, margin, boardHeight, boardWidth):
                     listRange[3] = False
              
             # Upper middle sloped borders
-            elif x < boardWidth/2 + margin + holeR and \
-                 x > boardWidth/2 + margin - holeR and y < boardHeight/2:
+            elif x < boardWidth/2 + margin + holeR + extendX and \
+                 x > boardWidth/2 + margin - holeR - extendX and \
+                 y < boardHeight/2:
                 pos = checkDistance3(margin, innerMargin, holeR, boardWidth)
                 pos2 = checkDistance4(margin, innerMargin, holeR, boardWidth)
                 if distPointLine(pos[0], pos[1], pos[2], x, y) <= ball.radius:
@@ -370,8 +380,8 @@ def borderCheck(ball, margin, boardHeight, boardWidth):
                     <= ball.radius:
                     listRange[7] = False
             
-            # Lower left sloped borders        
-            elif x > margin + distCorner and \
+            # Lower right sloped borders        
+            elif x > margin + boardWidth - distCorner and \
             y > boardHeight + margin - distCorner:
                 pos = checkDistance7(margin, boardHeight,\
                 boardWidth, innerMargin, distCorner)
@@ -385,18 +395,19 @@ def borderCheck(ball, margin, boardHeight, boardWidth):
                     listRange[9] = False
              
             # Lower middle sloped borders
-            elif x < boardWidth/2 + margin + holeR and \
-                 x > boardWidth/2 + margin - holeR and y > boardHeight/2:
+            elif x < boardWidth/2 + margin + holeR + extendX and \
+                 x > boardWidth/2 + margin - holeR - extendX \
+                 and y > boardHeight/2:
                 pos = checkDistance9(margin, boardHeight,\
                 boardWidth, innerMargin, holeR)
                 pos2 = checkDistance10(margin, boardHeight,\
                 boardWidth, innerMargin, holeR)
                 if distPointLine(pos[0], pos[1], pos[2], x, y) \
                     <= ball.radius:
-                    listRange[8] = False
+                    listRange[10] = False
                 elif distPointLine(pos2[0], pos2[1],pos2[2], x, y) \
                     <= ball.radius:
-                    listRange[9] = False
+                    listRange[11] = False
              
             # Lower left sloped borders
             elif x < margin + distCorner and \
@@ -426,18 +437,19 @@ def adjustBorderCollision(ball, oldX, oldY, margin, boardHeight, boardWidth):
     holeR = graphics.Hole.radius
     x = ball.rect.centerx
     y = ball.rect.centery
+    extendX = graphics.Border.extend*math.cos(math.pi/4)
     
     # List containing collision state information
     listRange = borderCheck(ball, margin, boardHeight, boardWidth)
     
-    # Collides with top/bottom normal borders
+    # Collides with left/right normal borders
     if listRange[0] == False:
         if ball.rect.x <= margin + innerMargin:
            ball.rect.x = margin + innerMargin
         elif ball.rect.x >= boardWidth+margin-innerMargin-2*ball.radius:
             ball.rect.x = boardWidth+margin-innerMargin-2*ball.radius
     
-    # Collides with left/right normal borders        
+    # Collides with top/bottom normal borders        
     elif listRange[1] == False:
         if ball.rect.y <= margin + innerMargin:
             ball.rect.y = margin + innerMargin
@@ -448,7 +460,7 @@ def adjustBorderCollision(ball, oldX, oldY, margin, boardHeight, boardWidth):
     elif listRange[2] == False:
         pos = checkDistance1(margin, distCorner, innerMargin)
         dist = distPointLine(pos[0], pos[1], pos[2], x, y)
-        if dist <= ball.radius:
+        if dist <= ball.radius: 
             ball.rect.x -= (ball.radius - dist)*math.cos(math.pi/4)
             ball.rect.y += (ball.radius - dist)* math.cos(math.pi/4)
    
@@ -467,6 +479,7 @@ def adjustBorderCollision(ball, oldX, oldY, margin, boardHeight, boardWidth):
         if dist <= ball.radius:
             ball.rect.x += (ball.radius - dist)*math.cos(math.pi/4)
             ball.rect.y += (ball.radius - dist)* math.cos(math.pi/4)
+            
     
            
     elif listRange[5] == False:
@@ -480,14 +493,14 @@ def adjustBorderCollision(ball, oldX, oldY, margin, boardHeight, boardWidth):
     elif listRange[6] == False:
         pos = checkDistance5(margin, innerMargin, boardWidth, distCorner)
         dist = distPointLine(pos[0], pos[1], pos[2], x, y)
-        if dist <= ball.radius:
+        if dist <= ball.radius: 
             ball.rect.x += (ball.radius - dist)*math.cos(math.pi/4)
             ball.rect.y += (ball.radius - dist)* math.cos(math.pi/4)
     
     elif listRange[7] == False:
         pos = checkDistance6(margin, innerMargin, boardWidth, distCorner)
         dist = distPointLine(pos[0], pos[1], pos[2], x, y)
-        if dist <= ball.radius:
+        if dist <= ball.radius: 
             ball.rect.x -= (ball.radius - dist)*math.cos(math.pi/4)
             ball.rect.y -= (ball.radius - dist)* math.cos(math.pi/4)
     
@@ -496,7 +509,7 @@ def adjustBorderCollision(ball, oldX, oldY, margin, boardHeight, boardWidth):
         pos = checkDistance7(margin, boardHeight,\
               boardWidth, innerMargin, distCorner)
         dist = distPointLine(pos[0], pos[1], pos[2], x, y)
-        if dist <= ball.radius:
+        if dist <= ball.radius: 
             ball.rect.x -= (ball.radius - dist)*math.cos(math.pi/4)
             ball.rect.y += (ball.radius - dist)* math.cos(math.pi/4)
             
@@ -557,21 +570,20 @@ def adjustCollision(ball1, ball2, oldX, oldY):
         yDiff = abs(ball1.radius*2*math.sin(angle) - dist*math.cos(angle))
         
         if oldX <= ball2.rect.x and oldY <= ball2.rect.y:
-            ball1.rect.x -= xDiff
-            ball1.rect.y -= yDiff
+            ball2.rect.x += xDiff
+            ball2.rect.y += yDiff
             
         elif oldX <= ball2.rect.x and oldY >= ball2.rect.y:
-            ball1.rect.x -= xDiff
-            ball1.rect.y += yDiff
-            
+            ball2.rect.x += xDiff
+            ball2.rect.y -= yDiff
+
         elif oldX >= ball2.rect.x and oldY >= ball2.rect.y:
-            ball1.rect.x += xDiff
-            ball1.rect.y += yDiff
+            ball2.rect.x -= xDiff
+            ball2.rect.y -= yDiff
             
         elif oldX >= ball2.rect.x and oldY <= ball2.rect.y:
-            ball1.rect.x += xDiff
-            ball1.rect.y -= yDiff
-        
-        
-    
+            ball2.rect.x -= xDiff
+            ball2.rect.y += yDiff
+            
+            
              

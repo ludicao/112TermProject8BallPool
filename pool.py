@@ -56,12 +56,14 @@ class Pygame():
             else:
                 self.ballGroup.add(ballClass.stripedBalls(ballPos[i+1][0], \
                 ballPos[i+1][1], ballColor[i], str(ballNum[i])))
-            
+
+        #self.ballGroup.add(ballClass.Ball(500, \
+               # 450, (132, 132, 132), str(13)))    
 
         # Initialize black ball
         self.ballGroup.add(ballClass.blackBall(ballPos[4][0], \
                 ballPos[4][1], (0, 0, 0), '8'))
-            
+           
             
         # Initialize white ball                       
         whiteX = self.width/4
@@ -228,6 +230,18 @@ class Pygame():
     # Timerfired function    
     def timerFired(self, dt):
         
+
+        # Check collisions with balls, change speed and direction if necessary,
+        # update ball position
+        self.ballGroup.update(self.ballGroup, self.holeGroup, \
+        self.gameboard.friction, self.dragWhiteBall, \
+        self.margin, self.boardHeight, self.boardWidth)
+        
+        
+        # Check for collisions with borders
+        collisions.collideBorder(self.ballGroup, self.margin, \
+        self.boardHeight, self.boardWidth)
+        
         # Check if ball falls into holes
         for hole in self.holeGroup:
             for ball in self.ballGroup:
@@ -235,8 +249,11 @@ class Pygame():
                                            ball.rect.x, ball.rect.y)
                 
                 # Ball falls into hole if slightly overlaps with hole
-                if dist <= (hole.radius + ballClass.Ball.radius)*3/5:
-                    
+                if dist <= (hole.radius + ballClass.Ball.radius)*3/5 or \
+                ball.rect.x < 0 or ball.rect.x > self.boardWidth - self.margin \
+                or ball.rect.y < 0 or \
+                ball.rect.y > self.boardHeight - self.margin:
+
                     # Check whether this is first ball in hole
                     if not self.firstHoleHit:
                         
@@ -246,13 +263,13 @@ class Pygame():
                         # Match player with their ball type
                         if (type(ball) == ballClass.Ball) and self.display1 or \
                         type(ball) != ballClass.Ball and not self.display1:
-                            self.player1 = text.Player('solid', 1, [])
-                            self.player2 = text.Player('striped', 2, [])
+                            self.player1 = text.Player('solid', 1, self.player1Name,[])
+                            self.player2 = text.Player('striped', 2, self.player2Name,[])
                             
                         elif type(ball) != ballClass.Ball and self.display1 or \
                         type(ball) == ballClass.Ball and not self.display1:
-                            self.player1 = text.Player('striped', 1, [])
-                            self.player2 = text.Player('solid', 2, [])
+                            self.player1 = text.Player('striped', 1, self.player1Name,[])
+                            self.player2 = text.Player('solid', 2, self.player2Name,[])
                     
                     # Add score to player (Player 1 playing)       
                     if self.display1 and ball.color != (255, 255, 255) and \
@@ -301,13 +318,13 @@ class Pygame():
                         == 7:
                             ball.kill()
                             endMode = endScreen.endScreen(self.display1, True)                        
-                            endMode.run()
+                            endMode.run(self.player1Name, self.player2Name)
                             
                         # Illegal situation: opponent automatically wins
                         else :
                             ball.kill()
                             endMode = endScreen.endScreen(self.display1, False)
-                            endMode.run()
+                            endMode.run(self.player1Name, self.player2Name)
                             
                             
                     
@@ -317,18 +334,6 @@ class Pygame():
                         self.xSpeed = 0
                         self.ySpeed =0
 
-
-        # Check collisions with balls, change speed and direction if necessary,
-        # update ball position
-        self.ballGroup.update(self.ballGroup, self.holeGroup, \
-        self.gameboard.friction, self.dragWhiteBall, \
-        self.margin, self.boardHeight, self.boardWidth)
-        
-        
-        # Check for collisions with borders
-        collisions.collideBorder(self.ballGroup, self.margin, \
-        self.boardHeight, self.boardWidth)
-        
         
         # Only update cue movement when mouse is released 
         # and cue is stiking the ball
@@ -427,13 +432,13 @@ class Pygame():
         # If no player has hit a ball yet
         if self.player1 == None:
             if self.display1:
-                text.Player.drawNone(screen, self.width, self.margin, True)
+                text.Player.drawNone(screen, self.width, self.margin, True, self.player1Name)
             else:
-                text.Player.drawNone(screen, self.width, self.margin, False)
+                text.Player.drawNone(screen, self.width, self.margin, False, self.player2Name)
             self.font = pygame.font.Font('cmunti.ttf', 15)
-            text1 = self.font.render('Player 1:', True, (0, 0, 0))
+            text1 = self.font.render(self.player1Name, True, (0, 0, 0))
             screen.blit(text1, (self.margin, self.boardHeight + self.margin))
-            text2 = self.font.render('Player 2:', True, (0, 0, 0))
+            text2 = self.font.render(self.player2Name, True, (0, 0, 0))
             screen.blit(text2, (self.margin, self.boardHeight + 2*self.margin))
             
        # If a ball has been hit and player has a ball type
@@ -463,7 +468,7 @@ class Pygame():
 
            
     # Run main function    
-    def run(self):
+    def run(self, player1, player2):
 
         clock = pygame.time.Clock()
         screen = pygame.display.set_mode((self.width, self.height))
@@ -472,6 +477,9 @@ class Pygame():
 
         # stores all the keys currently being held down
         self._keys = dict()
+        
+        self.player1Name = player1
+        self.player2Name = player2
 
         # call game-specific initialization
         self.init()
@@ -499,13 +507,7 @@ class Pygame():
         pygame.quit()
 
 
-# Run the game
-def main():
-    startMode = startScreen.startScreen()
-    startMode.run()
 
-if __name__ == '__main__':
-    main()
     
             
                     

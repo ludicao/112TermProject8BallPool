@@ -48,8 +48,10 @@ class Ball(pygame.sprite.Sprite):
         self.ySpeed = 0
         self.color = color
         self.number = number
+        self.selfMove = True
         self.font = pygame.font.Font('Aller_Rg.ttf', 9)
         text = self.font.render(number, True, (0, 0, 0))
+
 
         side = 2*Ball.radius
         innerSide = 2*Ball.innerRadius
@@ -81,11 +83,12 @@ class Ball(pygame.sprite.Sprite):
     def update(self, balls, holes, fric, dragWhite, margin, boardHeight, boardWidth):        
         # Check if collision occurs
         for ball in balls:
-            if ball != self and pygame.sprite.collide_circle(self, ball):
+            if self != ball and pygame.sprite.collide_circle(self, ball):
                 # Make sure ball with speed is of first parameter
                 if self.xSpeed == 0 and self.ySpeed == 0 and \
                 (ball.xSpeed != 0 or ball.ySpeed != 0):
                     if ball.color == (255, 255, 255):
+                        self.selfMove = False
                         ball.violation = False                  
                     collisions.collide(ball, self)
                 elif abs(self.xSpeed) <= 0.01 and abs(self.xSpeed) <= 0.01 \
@@ -93,7 +96,8 @@ class Ball(pygame.sprite.Sprite):
                     continue
                 else:
                     if self.color == (255, 255, 255):
-                        ball.violation = False                  
+                        ball.violation = False 
+                        self.selfMove = True                 
                     collisions.collide(self,  ball)
         
         collisions.collideBorder(self, margin, boardHeight, boardWidth)
@@ -109,8 +113,18 @@ class Ball(pygame.sprite.Sprite):
         # updated after the collision method
         for ball in balls:
             if not dragWhite:
-                if self != ball and pygame.sprite.collide_circle(self, ball): 
-                    collisions.adjustCollision(self, ball, oldX, oldY)
+                if self != ball and pygame.sprite.collide_circle(self, ball):
+                    if self.selfMove:
+                         collisions.adjustCollision(self, ball, oldX, oldY)
+                         if self.color == (255, 255, 255):
+                             self.violation = False
+                    else:
+                        collisions.adjustCollision(ball, self, oldX, oldY)
+                        self.selfMove = True
+                        if ball.color == (255, 255, 255):
+                            ball.violation = False
+
+        
 
         # Make sure ball doesn't go beyond the border when its position just 
         # changed after the collideBorder method
@@ -186,6 +200,7 @@ class stripedBalls(Ball):
     def __init__(self, x, y, color, number):
         
         super().__init__(x, y, color, number)
+        self.selfMove = True
         self.font = pygame.font.Font('Aller_Rg.ttf', 10)
         text = self.font.render(number, True, (0, 0, 0))
         

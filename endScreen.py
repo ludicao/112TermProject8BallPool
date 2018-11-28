@@ -63,7 +63,8 @@ class endScreen():
             
             
     # init values of the Pygame class
-    def __init__(self, currDisplay, bool, width=1000, height=640, fps=50, title="112 Pygame Game"):
+    def __init__(self, currDisplay, bool, width=1000, \
+    height=640, fps=50, title="112 Pygame Game"):
         self.width = width
         self.height = height
         self.margin = 40
@@ -78,13 +79,14 @@ class endScreen():
     def drawText(self, screen):
         self.font = pygame.font.Font('cmunti.ttf', 30)
         if self.player == 'Player 1' and self.currPlayerWins:
-            text = self.font.render('Congrats! Player 1 Wins', True, (0, 0, 0))
+            text = self.font.render('Congrats! %s Wins' % \
+            self.player1.title(), True, (0, 0, 0))
             screen.blit(text, (self.width/2 - text.get_rect().width/2, \
             self.height/3 - text.get_rect().height/2))
 
         elif self.player == 'Player 1' and not self.currPlayerWins:
             text = self.font.render('Uh oh! 8-Ball Striken', True, (0, 0, 0))
-            text2 = self.font.render('Player 2 Wins!', True, (0, 0, 0))
+            text2 = self.font.render('%s Wins!' % self.player2.title(), True, (0, 0, 0))
             screen.blit(text, (self.width/2 - text.get_rect().width/2, \
             self.height/3 - text.get_rect().height/2))
             screen.blit(text2, (self.width/2 - text2.get_rect().width/2, \
@@ -92,14 +94,14 @@ class endScreen():
             
         elif self.player == 'Player 2' and not self.currPlayerWins:
             text = self.font.render('Uh oh! 8-Ball Striken', True, (0, 0, 0))
-            text2 = self.font.render('Player 1 Wins!', True, (0, 0, 0))
+            text2 = self.font.render('%s Wins!' % self.player1.title(), True, (0, 0, 0))
             screen.blit(text, (self.width/2 - text.get_rect().width/2, \
             self.height/3 - text.get_rect().height/2))
             screen.blit(text2, (self.width/2 - text2.get_rect().width/2, \
             self.height/3 + text2.get_rect().height))
             
         elif self.player == 'Player 2' and self.currPlayerWins:
-            text = self.font.render('Congrats! Player 2 Wins', True, (0, 0, 0))
+            text = self.font.render('Congrats! % Wins' % self.player2.title(), True, (0, 0, 0))
             screen.blit(text, (self.width/2 - text.get_rect().width/2, \
             self.height/3 - text.get_rect().height/2))
      
@@ -166,7 +168,7 @@ class endScreen():
             pool.Pygame().run()
             
     # Run function         
-    def run(self):
+    def run(self, player1, player2):
     
         clock = pygame.time.Clock()
         screen = pygame.display.set_mode((self.width, self.height))
@@ -178,6 +180,8 @@ class endScreen():
     
         # call game-specific initialization
         self.init()
+        self.player1 = player1
+        self.player2 = player2
         playing = True
         while playing:
             time = clock.tick(self.fps)
