@@ -1,3 +1,10 @@
+#############################
+# This file calculates the physical positions of the various graphics, given values
+# such as the screenWidth, screeHeight, boardWidth, and boardHeight. It also includes
+# calculations of various angular positions when needed to draw objects and determine
+# speed/angle of colliding objects. 
+#############################
+
 import graphics
 import math
 import pygame
@@ -117,17 +124,5 @@ def boundsForWhite(margin, boardWidth, boardHeight):
     if x < rightBound and x > leftBound and y > upBound and y < lowBound:
         return True
     else:
-        print('adf')
         return False
         
-    
-    
-    
-    
-    
-    
-    
-
-    
-    
-    

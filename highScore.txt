@@ -1,0 +1,5 @@
+Ludi: 5
+John: 4
+Mike: 2
+David: 1
+Teg: 1

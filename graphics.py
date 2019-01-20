@@ -1,3 +1,12 @@
+#############################
+# This file contains the drawings of the gameboard, the holes, and the cue stick. The
+# gameboard is actually drawn as multiple layers overlapping on each other. The
+# bottom layer is a simple brown rectangle, whereas the actual green gameboard is
+# a complicated polygon shape under the six black holes. This file includes
+# the functions that calculats the polygon points given the margin, screenWidth, 
+# screenHeight, and inner border lengths.
+#############################
+
 import pygame
 import math
 
@@ -159,7 +168,8 @@ class Border():
         radius = Hole.radius
         
         firstx = startx
-        firsty = outerMargin + Border.distToCornerSide - extendY*math.cos(math.pi/4)
+        firsty = outerMargin + Border.distToCornerSide - \
+        extendY*math.cos(math.pi/4)
         
         secondx = firstx + extend*math.cos(math.pi/4)
         secondy = firsty + extendY*math.cos(math.pi/4)
@@ -180,11 +190,13 @@ class Border():
     def calculatePoints(self):
         outerMargin = self.outerMargin
         listPoints = []
-        starty = outerMargin + Border.innerMargin - Border.extend*math.cos(math.pi/4)
+        starty = outerMargin + Border.innerMargin - \
+        Border.extend*math.cos(math.pi/4)
         topPoints = self.calculateUpDown(starty, Hole.radius, Border.extend)
         listPoints.extend(topPoints)
         
-        startx = outerMargin + Border.innerMargin - Border.extend*math.cos(math.pi/4)
+        startx = outerMargin + Border.innerMargin - \
+        Border.extend*math.cos(math.pi/4)
         leftPoints = self.calculateLeftRight(startx, Border.extend)
         listPoints.extend(leftPoints)
         
@@ -206,6 +218,12 @@ class Border():
     def draw(self, screen):
         allPoints = self.calculatePoints()
         pygame.draw.polygon(screen, self.color, allPoints, 0)
+        
+        
+    
+    
+        
+    
         
         
         
